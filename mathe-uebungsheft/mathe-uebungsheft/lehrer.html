@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Übungsheft – Lehreransicht</title>
+<link rel="stylesheet" href="css/stil.css">
+<style>
+  .heft{max-width:760px}
+  .waehler{display:flex;gap:10px;align-items:center;margin-bottom:24px;flex-wrap:wrap}
+  .waehler select{min-height:44px;padding:0 12px;font:inherit;border:1.5px solid var(--linie);border-radius:10px;background:#fff}
+</style>
+</head>
+<body>
+
+<section id="ansicht-login" class="ansicht sichtbar">
+  <div class="heft">
+    <h1 class="marke">Lehreransicht<span class="marke-klasse">Mathe 9 – Übungsheft</span></h1>
+    <form id="form-login" autocomplete="off">
+      <label class="feld"><span>Kürzel</span><input id="in-kuerzel" type="text" autocapitalize="none" spellcheck="false" required></label>
+      <label class="feld"><span>Passwort</span><input id="in-passwort" type="password" required></label>
+      <p id="login-fehler" class="fehlermeldung" hidden></p>
+      <button class="knopf knopf-haupt" type="submit">Anmelden</button>
+    </form>
+  </div>
+</section>
+
+<section id="ansicht-daten" class="ansicht">
+  <div class="heft">
+    <div class="waehler">
+      <select id="klasse-wahl"></select>
+      <button class="knopf-klein" id="knopf-neu">Aktualisieren</button>
+      <button class="knopf-klein" id="knopf-csv">Als Tabelle speichern</button>
+      <button class="knopf-klein" id="knopf-abmelden">Abmelden</button>
+    </div>
+
+    <h2 class="ueberschrift">Woran die Klasse gerade scheitert</h2>
+    <div id="klassenfehler"></div>
+
+    <h2 class="ueberschrift">Teilkompetenzen im Klassenschnitt</h2>
+    <ul class="diagnose" id="klassen-tags"></ul>
+
+    <h2 class="ueberschrift">Einzelne Schüler</h2>
+    <table class="tabelle">
+      <thead><tr><th>Kürzel</th><th>Aufgaben</th><th>Richtig</th><th>Zuletzt</th><th>Schwächster Bereich</th></tr></thead>
+      <tbody id="schuelerliste"></tbody>
+    </table>
+  </div>
+</section>
+
+<script type="module">
+import { DB } from './js/db.js';
+import { ladeKapitelliste, ladeKapitel, auswertungNachTag, haeufigsteFehler } from './js/engine.js';
+
+const $ = (id) => document.getElementById(id);
+const zeige = (n) => document.querySelectorAll('.ansicht').forEach(a => a.classList.toggle('sichtbar', a.id === `ansicht-${n}`));
+
+const namen = { tags: {}, fehler: {} };
+let daten = null;
+
+(async () => {
+  const kapitel = await Promise.all((await ladeKapitelliste()).map(ladeKapitel));
+  for (const k of kapitel) {
+    Object.assign(namen.tags, k.tagNamen || {});
+    Object.assign(namen.fehler, k.fehlerNamen || {});
+  }
+  if (DB.nutzer()?.rolle === 'lehrer') starten();
+})();
+
+$('form-login').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  $('login-fehler').hidden = true;
+  try {
+    const nutzer = await DB.anmelden($('in-kuerzel').value, $('in-passwort').value);
+    if (nutzer.rolle !== 'lehrer') throw new Error('Dieser Zugang hat keine Lehrerrechte.');
+    starten();
+  } catch (f) {
+    $('login-fehler').textContent = f.message;
+    $('login-fehler').hidden = false;
+  }
+});
+
+$('knopf-abmelden').addEventListener('click', () => { DB.abmelden(); zeige('login'); });
+$('knopf-neu').addEventListener('click', () => laden($('klasse-wahl').value));
+$('klasse-wahl').addEventListener('change', (e) => laden(e.target.value));
+
+async function starten() {
+  const klassen = await DB.klassenListe();
+  $('klasse-wahl').innerHTML = klassen.map(k => `<option>${k}</option>`).join('');
+  zeige('daten');
+  if (klassen.length) laden(klassen[0]);
+}
+
+async function laden(klasse) {
+  daten = await DB.klasseLaden(klasse);
+  const { profile, versuche } = daten;
+
+  const fehler = haeufigsteFehler(versuche, namen.fehler).slice(0, 4);
+  $('klassenfehler').innerHTML = fehler.length
+    ? fehler.map(f => `<div class="hinweiskasten"><p>${gross(f.name)}</p><small>${f.anzahl} mal in dieser Klasse</small></div>`).join('')
+    : '<p class="diagnose-leer">Noch keine Daten.</p>';
+
+  const tags = auswertungNachTag(versuche, namen.tags);
+  $('klassen-tags').innerHTML = tags.map(t =>
+    `<li class="${t.stufe}"><span class="diagnose-name">${t.name}</span>
+     <span class="diagnose-wert">${Math.round(t.quote * 100)}%</span></li>`).join('')
+    || '<li class="diagnose-leer">Noch keine Daten.</li>';
+
+  $('schuelerliste').innerHTML = profile.map(p => {
+    const eigene = versuche.filter(v => v.nutzer === p.id);
+    const richtig = eigene.filter(v => v.richtig).length;
+    const quote = eigene.length ? Math.round(richtig / eigene.length * 100) : null;
+    const schwach = auswertungNachTag(eigene, namen.tags).filter(t => t.versuche >= 3)[0];
+    const letzte = eigene[0] ? new Date(eigene[0].erstellt).toLocaleDateString('de-DE') : '–';
+    return `<tr>
+      <td><strong>${p.kuerzel}</strong></td>
+      <td>${eigene.length}</td>
+      <td class="quote ${quote === null ? '' : quote >= 80 ? 'q-stark' : quote >= 55 ? 'q-mittel' : 'q-schwach'}">${quote === null ? '–' : quote + '%'}</td>
+      <td>${letzte}</td>
+      <td>${schwach ? schwach.name : '–'}</td>
+    </tr>`;
+  }).join('');
+}
+
+const gross = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+
+$('knopf-csv').addEventListener('click', () => {
+  if (!daten) return;
+  const zeilen = [['Kuerzel', 'Aufgaben', 'Richtig', 'Quote', 'SchwaechsterBereich']];
+  for (const p of daten.profile) {
+    const e = daten.versuche.filter(v => v.nutzer === p.id);
+    const r = e.filter(v => v.richtig).length;
+    const s = auswertungNachTag(e, namen.tags).filter(t => t.versuche >= 3)[0];
+    zeilen.push([p.kuerzel, e.length, r, e.length ? Math.round(r / e.length * 100) : '', s ? s.name : '']);
+  }
+  const csv = '\uFEFF' + zeilen.map(z => z.join(';')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+  a.download = `uebungsheft-${$('klasse-wahl').value}.csv`;
+  a.click();
+});
+</script>
+</body>
+</html>

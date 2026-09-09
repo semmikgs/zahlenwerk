@@ -1,0 +1,236 @@
+/* Mathe-Übungsheft – Optik: Schulheft, Füllertinte, Korrekturrot.
+   Keine Webfonts (Datenschutz), alles läuft offline aus dem Repo. */
+
+:root{
+  --papier:#FBFAF7;
+  --karo:#D9E2EF;
+  --tinte:#1C3F7C;
+  --tinte-tief:#122B57;
+  --rot:#B5372B;
+  --gruen:#2C6E52;
+  --grau:#5A6472;
+  --linie:#E4E2DC;
+
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --rechen: ui-rounded, "SF Pro Rounded", "Segoe UI", Verdana, sans-serif;
+
+  --rand: 20px;
+  --tipp: 56px; /* Mindesthöhe für Finger */
+}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--papier);
+  color:#1A1D23;
+  font:400 17px/1.55 var(--sans);
+  font-variant-numeric:tabular-nums;
+  padding-bottom:env(safe-area-inset-bottom);
+  overscroll-behavior-y:none;
+}
+
+.ansicht{display:none}
+.ansicht.sichtbar{display:block}
+
+.heft{max-width:480px;margin:0 auto;padding:var(--rand) var(--rand) 48px}
+.heft-mitte{text-align:center;padding-top:56px}
+.heft-uebung{padding-bottom:180px}
+
+/* --- Kopf --- */
+.kopf{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  max-width:480px;margin:0 auto;padding:16px var(--rand) 0;
+}
+.kopf-gruss{margin:0;font-weight:600;font-size:19px;color:var(--tinte-tief)}
+.kopf-datum{margin:2px 0 0;font-size:14px;color:var(--grau)}
+.kopf-uebung{padding-top:14px}
+
+/* --- Anmeldung --- */
+.marke{
+  margin:56px 0 4px;font-size:34px;line-height:1.1;font-weight:700;
+  color:var(--tinte-tief);letter-spacing:-.02em;
+}
+.marke-klasse{
+  display:block;font-size:17px;font-weight:500;color:var(--grau);
+  letter-spacing:0;margin-top:6px;
+}
+.lead{color:var(--grau);margin:0 0 28px}
+.feld{display:block;margin-bottom:16px}
+.feld span{display:block;font-size:14px;font-weight:600;color:var(--grau);margin-bottom:6px}
+.feld input{
+  width:100%;min-height:var(--tipp);padding:0 16px;
+  font:400 18px var(--sans);color:#1A1D23;
+  background:#fff;border:1.5px solid var(--linie);border-radius:12px;
+}
+.feld input:focus-visible,#in-antwort:focus-visible{outline:3px solid var(--tinte);outline-offset:2px;border-color:var(--tinte)}
+.fussnote{margin-top:24px;font-size:14px;color:var(--grau)}
+.fehlermeldung{color:var(--rot);font-size:15px;margin:0 0 12px}
+
+/* --- Knöpfe --- */
+.knopf{
+  display:block;width:100%;min-height:var(--tipp);
+  font:600 18px var(--sans);border:none;border-radius:14px;cursor:pointer;
+}
+.knopf-haupt{background:var(--tinte);color:#fff;box-shadow:0 2px 0 var(--tinte-tief)}
+.knopf-haupt:active{transform:translateY(2px);box-shadow:none}
+.knopf-haupt[disabled]{background:#A9B3C4;box-shadow:none}
+.knopf-klein{
+  min-height:40px;padding:0 14px;font:600 15px var(--sans);
+  background:transparent;color:var(--tinte);border:1.5px solid var(--karo);
+  border-radius:10px;cursor:pointer;flex:0 0 auto;
+}
+.knopf-text{
+  display:block;width:100%;margin-top:20px;padding:12px;
+  background:none;border:none;color:var(--tinte);font:500 16px var(--sans);
+  text-decoration:underline;text-underline-offset:3px;cursor:pointer;
+}
+
+/* --- Zahlenstreifen --- */
+.streifen{display:flex;gap:10px;margin-bottom:22px}
+.streifen-wert{
+  flex:1;text-align:center;padding:12px 6px;
+  background:#fff;border:1.5px solid var(--linie);border-radius:12px;
+}
+.streifen-wert strong{display:block;font-size:24px;color:var(--tinte-tief);line-height:1.1}
+.streifen-wert span{display:block;font-size:12px;color:var(--grau);margin-top:3px}
+
+/* --- Tageskarte --- */
+.tageskarte{
+  background:var(--tinte);color:#fff;border-radius:18px;padding:22px 20px;margin-bottom:32px;
+}
+.tageskarte-oben{margin:0;font-size:14px;color:#B9CBE8}
+.tageskarte-titel{margin:4px 0 16px;font-size:23px;font-weight:700;line-height:1.25}
+.tageskarte-info{margin:10px 0 18px;font-size:14px;color:#B9CBE8}
+.tageskarte .knopf-haupt{background:#fff;color:var(--tinte-tief);box-shadow:0 2px 0 #C7D5EA}
+
+.balken{height:8px;background:rgba(255,255,255,.28);border-radius:99px;overflow:hidden}
+.balken i{display:block;height:100%;background:#fff;border-radius:99px;transition:width .35s ease}
+.balken-schmal{flex:1;height:8px;background:var(--karo)}
+.balken-schmal i{background:var(--tinte)}
+.zaehler{font-size:15px;font-weight:600;color:var(--grau);flex:0 0 auto;min-width:42px;text-align:right}
+
+/* --- Kapitel --- */
+.ueberschrift{font-size:15px;font-weight:700;color:var(--grau);margin:0 0 6px}
+.abschnitt-info{margin:0 0 14px;font-size:14px;color:var(--grau)}
+.kapitelliste{list-style:none;margin:0 0 32px;padding:0}
+.kapitelliste li{margin-bottom:10px}
+.kapitelliste button{
+  width:100%;min-height:var(--tipp);display:flex;align-items:center;gap:14px;
+  padding:12px 16px;text-align:left;cursor:pointer;
+  background:#fff;border:1.5px solid var(--linie);border-radius:14px;font:inherit;
+}
+.kapitelliste strong{display:block;font-size:17px;color:var(--tinte-tief)}
+.kapitelliste small{display:block;font-size:13px;color:var(--grau)}
+.ring{flex:0 0 auto;width:38px;height:38px}
+
+/* --- Diagnose --- */
+.diagnose{list-style:none;margin:0 0 24px;padding:0}
+.diagnose li{
+  display:flex;align-items:baseline;gap:10px;padding:11px 0;
+  border-bottom:1px solid var(--linie);font-size:16px;
+}
+.diagnose li:last-child{border-bottom:none}
+.diagnose-name{flex:1}
+.diagnose-wert{font-weight:700;font-variant-numeric:tabular-nums}
+.stark .diagnose-wert{color:var(--gruen)}
+.mittel .diagnose-wert{color:#9A6B12}
+.schwach .diagnose-wert{color:var(--rot)}
+.diagnose-leer{color:var(--grau);font-size:15px;border:none}
+
+/* --- Aufgabe --- */
+.aufgabe-thema{margin:8px 0 12px;font-size:14px;font-weight:600;color:var(--grau)}
+.karo{
+  background-color:#fff;
+  background-image:linear-gradient(var(--karo) 1px, transparent 1px),
+                   linear-gradient(90deg, var(--karo) 1px, transparent 1px);
+  background-size:22px 22px;
+  border:1.5px solid var(--linie);border-radius:14px;
+  padding:32px 18px;margin-bottom:24px;
+}
+.aufgabe-text{
+  margin:0;text-align:center;
+  font:600 32px/1.35 var(--rechen);
+  color:var(--tinte-tief);letter-spacing:.01em;
+  word-break:break-word;
+}
+.aufgabe-text .frage-satz{display:block;font:500 18px/1.45 var(--sans);color:#1A1D23;margin-bottom:14px}
+
+.antworten{display:grid;gap:10px}
+.antwort{
+  min-height:var(--tipp);padding:12px 18px;
+  background:#fff;border:1.5px solid var(--linie);border-radius:14px;
+  font:600 21px var(--rechen);color:var(--tinte-tief);text-align:center;cursor:pointer;
+}
+.antwort:active{background:#F1F5FB}
+.antwort.gewaehlt{border-color:var(--tinte);border-width:2.5px;background:#EEF3FA}
+.antwort.richtig{border-color:var(--gruen);background:#EDF6F1;color:var(--gruen)}
+.antwort.falsch{border-color:var(--rot);background:#FBEFEE;color:var(--rot)}
+.antwort[disabled]{cursor:default}
+
+.knopf-pruefen{margin-top:16px}
+.eingabe{display:grid;gap:10px}
+#in-antwort{
+  width:100%;min-height:var(--tipp);padding:0 16px;text-align:center;
+  font:600 24px var(--rechen);color:var(--tinte-tief);
+  background:#fff;border:1.5px solid var(--linie);border-radius:14px;
+}
+
+/* --- Rückmeldung --- */
+.rueckmeldung{
+  position:fixed;left:0;right:0;bottom:0;z-index:5;
+  padding:20px var(--rand) calc(20px + env(safe-area-inset-bottom));
+  background:#fff;border-top:2px solid var(--linie);
+  border-radius:20px 20px 0 0;
+}
+.rueckmeldung > *{max-width:480px;margin-left:auto;margin-right:auto}
+.rueckmeldung-titel{margin:0 0 4px;font-size:19px;font-weight:700}
+.rueckmeldung-text{margin:0 0 16px;font-size:16px;color:var(--grau)}
+.rueckmeldung.ja .rueckmeldung-titel{color:var(--gruen)}
+.rueckmeldung.nein .rueckmeldung-titel{color:var(--rot)}
+@media (prefers-reduced-motion: no-preference){
+  .rueckmeldung{animation:hoch .18s ease-out}
+  @keyframes hoch{from{transform:translateY(100%)}to{transform:translateY(0)}}
+}
+
+/* --- Abschluss --- */
+.siegel{
+  width:82px;height:82px;margin:0 auto 20px;
+  display:grid;place-items:center;border-radius:50%;
+  background:var(--gruen);color:#fff;font-size:40px;line-height:1;
+}
+.fertig-titel{margin:0 0 8px;font-size:27px;color:var(--tinte-tief)}
+.fertig-text{margin:0 0 28px;color:var(--grau)}
+#ansicht-fertig .diagnose{text-align:left;margin-bottom:28px}
+
+/* --- Dialog --- */
+dialog{
+  border:none;border-radius:18px 18px 0 0;padding:0;width:100%;max-width:480px;
+  margin:auto auto 0;background:var(--papier);
+}
+dialog::backdrop{background:rgba(18,43,87,.42)}
+.dialog-inhalt{padding:24px var(--rand) calc(24px + env(safe-area-inset-bottom))}
+.dialog-inhalt h3{margin:0 0 12px;font-size:21px;color:var(--tinte-tief)}
+.grundlage-text{font-size:17px;margin-bottom:22px}
+.grundlage-text p{margin:0 0 12px}
+.grundlage-text .merksatz{
+  background:#fff;border-left:4px solid var(--tinte);border-radius:0 10px 10px 0;
+  padding:12px 14px;font-weight:600;color:var(--tinte-tief);
+}
+.grundlage-text .rechnung{
+  font:600 20px/1.6 var(--rechen);color:var(--tinte-tief);
+  background:#fff;border:1.5px solid var(--linie);border-radius:10px;
+  padding:12px 14px;text-align:center;
+}
+
+/* --- Lehreransicht --- */
+.tabelle{width:100%;border-collapse:collapse;font-size:15px}
+.tabelle th{text-align:left;font-size:13px;color:var(--grau);padding:8px 6px;border-bottom:1.5px solid var(--linie)}
+.tabelle td{padding:10px 6px;border-bottom:1px solid var(--linie)}
+.quote{font-weight:700;font-variant-numeric:tabular-nums}
+.q-stark{color:var(--gruen)} .q-mittel{color:#9A6B12} .q-schwach{color:var(--rot)}
+.hinweiskasten{
+  background:#fff;border:1.5px solid var(--linie);border-left:4px solid var(--rot);
+  border-radius:0 12px 12px 0;padding:14px 16px;margin-bottom:12px;
+}
+.hinweiskasten p{margin:0;font-size:16px}
+.hinweiskasten small{color:var(--grau)}
