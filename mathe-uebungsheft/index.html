@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1C3F7C">
+<title>Mathe 9 – Übungsheft</title>
+<link rel="stylesheet" href="css/stil.css">
+</head>
+<body>
+
+<!-- ANMELDUNG -->
+<section id="ansicht-login" class="ansicht sichtbar">
+  <div class="heft">
+    <h1 class="marke">Übungsheft<span class="marke-klasse">Mathe 9</span></h1>
+    <p class="lead">Melde dich mit dem Kürzel an, das du von Herrn Meyer bekommen hast.</p>
+    <form id="form-login" autocomplete="off">
+      <label class="feld">
+        <span>Kürzel</span>
+        <input id="in-kuerzel" type="text" inputmode="text" autocapitalize="none" spellcheck="false" placeholder="9a-14" required>
+      </label>
+      <label class="feld">
+        <span>Passwort</span>
+        <input id="in-passwort" type="password" placeholder="••••••" required>
+      </label>
+      <p id="login-fehler" class="fehlermeldung" hidden></p>
+      <button class="knopf knopf-haupt" type="submit">Anmelden</button>
+    </form>
+    <p class="fussnote">Es werden keine Namen gespeichert – nur dein Kürzel und was du geübt hast.</p>
+  </div>
+</section>
+
+<!-- STARTSEITE -->
+<section id="ansicht-start" class="ansicht">
+  <header class="kopf">
+    <div>
+      <p class="kopf-gruss" id="gruss">Hallo</p>
+      <p class="kopf-datum" id="datum"></p>
+    </div>
+    <button class="knopf-klein" id="knopf-abmelden">Abmelden</button>
+  </header>
+
+  <div class="heft">
+    <div class="streifen">
+      <div class="streifen-wert"><strong id="stat-streak">0</strong><span>Tage am Stück</span></div>
+      <div class="streifen-wert"><strong id="stat-xp">0</strong><span>Punkte</span></div>
+      <div class="streifen-wert"><strong id="stat-quote">–</strong><span>richtig</span></div>
+    </div>
+
+    <article class="tageskarte" id="tageskarte">
+      <p class="tageskarte-oben">Lektion für heute</p>
+      <p class="tageskarte-titel" id="tages-titel">Wird geladen …</p>
+      <div class="balken"><i id="tages-balken" style="width:0%"></i></div>
+      <p class="tageskarte-info" id="tages-info"></p>
+      <button class="knopf knopf-haupt" id="knopf-start">Loslegen</button>
+    </article>
+
+    <h2 class="ueberschrift">Kapitel</h2>
+    <ul class="kapitelliste" id="kapitelliste"></ul>
+
+    <h2 class="ueberschrift">Woran du gerade arbeitest</h2>
+    <ul class="diagnose" id="diagnose"><li class="diagnose-leer">Übe eine Lektion, dann steht hier, was schon sitzt und was noch wackelt.</li></ul>
+  </div>
+</section>
+
+<!-- ÜBUNG -->
+<section id="ansicht-uebung" class="ansicht">
+  <header class="kopf kopf-uebung">
+    <button class="knopf-klein" id="knopf-abbrechen">Zurück</button>
+    <div class="balken balken-schmal"><i id="uebung-balken" style="width:0%"></i></div>
+    <span class="zaehler" id="uebung-zaehler">1/8</span>
+  </header>
+
+  <div class="heft heft-uebung">
+    <p class="aufgabe-thema" id="aufgabe-thema"></p>
+    <div class="karo">
+      <p class="aufgabe-text" id="aufgabe-text"></p>
+    </div>
+
+    <div id="antworten" class="antworten"></div>
+
+    <form id="form-eingabe" class="eingabe" hidden>
+      <input id="in-antwort" type="text" inputmode="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Antwort">
+      <button class="knopf knopf-haupt" type="submit">Prüfen</button>
+    </form>
+
+    <button class="knopf-text" id="knopf-hilfe">Ich brauche die Erklärung</button>
+  </div>
+
+  <div class="rueckmeldung" id="rueckmeldung" hidden>
+    <p class="rueckmeldung-titel" id="rueckmeldung-titel"></p>
+    <p class="rueckmeldung-text" id="rueckmeldung-text"></p>
+    <button class="knopf knopf-haupt" id="knopf-weiter">Weiter</button>
+  </div>
+</section>
+
+<!-- ABSCHLUSS -->
+<section id="ansicht-fertig" class="ansicht">
+  <div class="heft heft-mitte">
+    <p class="siegel" id="siegel">✓</p>
+    <h2 class="fertig-titel" id="fertig-titel">Lektion geschafft</h2>
+    <p class="fertig-text" id="fertig-text"></p>
+    <ul class="diagnose" id="fertig-diagnose"></ul>
+    <button class="knopf knopf-haupt" id="knopf-heim">Zur Übersicht</button>
+    <button class="knopf-text" id="knopf-nochmal">Die gleiche Lektion noch einmal – mit neuen Zahlen</button>
+  </div>
+</section>
+
+<!-- GRUNDLAGEN -->
+<dialog id="dialog-grundlage">
+  <div class="dialog-inhalt">
+    <h3 id="grundlage-titel"></h3>
+    <div id="grundlage-text" class="grundlage-text"></div>
+    <button class="knopf knopf-haupt" id="knopf-dialog-zu">Verstanden</button>
+  </div>
+</dialog>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
