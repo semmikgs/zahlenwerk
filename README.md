@@ -14,6 +14,10 @@ Zum Aushängen oder Projizieren: `qr-druck.html` im Browser öffnen und drucken.
 Die Druckfassung des QR-Codes liegt zusätzlich als SVG unter
 `bilder/qr-mathe-uebungsheft.svg` und bleibt in jeder Größe scharf.
 
+Ein Konto ist zum Ausprobieren nicht nötig: auf der Anmeldeseite führt
+**Ohne Anmeldung üben** direkt in den Kurs. Der Fortschritt bleibt dann auf dem
+Gerät und erscheint nicht in der Lehreransicht.
+
 ## Was drin ist
 
 | Ordner | Inhalt |

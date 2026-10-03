@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1C3F7C">
 <title>Mathe 9 – Übungsheft</title>
-<link rel="stylesheet" href="css/stil.css?v=4">
+<link rel="stylesheet" href="css/stil.css?v=5">
 </head>
 <body>
 
@@ -26,7 +26,11 @@
       <p id="login-fehler" class="fehlermeldung" hidden></p>
       <button class="knopf knopf-haupt" type="submit">Anmelden</button>
     </form>
-    <p class="fussnote">Es werden keine Namen gespeichert – nur dein Kürzel und was du geübt hast.</p>
+
+    <p class="trenner"><span>oder</span></p>
+    <button class="knopf knopf-zweit" id="knopf-gast">Ohne Anmeldung üben</button>
+    <p class="fussnote">Als Gast kannst du alles ausprobieren. Dein Fortschritt bleibt dann nur auf diesem Gerät, und deine Lehrkraft sieht ihn nicht.</p>
+    <p class="fussnote">Mit Anmeldung werden keine Namen gespeichert – nur dein Kürzel und was du geübt hast.</p>
   </div>
 </section>
 
@@ -41,6 +45,11 @@
   </header>
 
   <div class="heft">
+    <div class="gastband" id="gastband" hidden>
+      <p>Du übst als Gast. Der Fortschritt bleibt auf diesem Gerät.</p>
+      <button class="knopf-klein" id="knopf-gast-anmelden">Anmelden</button>
+    </div>
+
     <div class="streifen">
       <div class="streifen-wert"><strong id="stat-streak">0</strong><span>Tage am Stück</span></div>
       <div class="streifen-wert"><strong id="stat-xp">0</strong><span>Punkte</span></div>
@@ -124,6 +133,6 @@
   </div>
 </dialog>
 
-<script type="module" src="js/app.js?v=4"></script>
+<script type="module" src="js/app.js?v=5"></script>
 </body>
 </html>

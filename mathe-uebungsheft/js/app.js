@@ -1,9 +1,9 @@
-import { CONFIG } from './config.js?v=4';
-import { DB, speicher } from './db.js?v=4';
+import { CONFIG } from './config.js?v=5';
+import { DB, speicher } from './db.js?v=5';
 import {
   ladeKapitelliste, ladeKapitel, baueAufgabe, waehleVorlagen,
   naechsteWiederholung, auswertungNachTag, wuerfel, startwert, heute,
-} from './engine.js?v=4';
+} from './engine.js?v=5';
 
 const $ = (id) => document.getElementById(id);
 
@@ -58,6 +58,19 @@ $('form-login').addEventListener('submit', async (e) => {
   }
 });
 
+$('knopf-gast').addEventListener('click', async () => {
+  DB.alsGast();
+  await startseite();
+});
+
+$('knopf-gast-anmelden').addEventListener('click', () => {
+  DB.abmelden();
+  $('in-kuerzel').value = '';
+  $('in-passwort').value = '';
+  $('login-fehler').hidden = true;
+  zeige('login');
+});
+
 $('schalter-sofort').checked = zustand.sofortPruefen;
 $('schalter-sofort').addEventListener('change', (e) => {
   zustand.sofortPruefen = e.target.checked;
@@ -73,7 +86,8 @@ $('knopf-abmelden').addEventListener('click', () => {
 
 async function startseite() {
   const nutzer = DB.nutzer();
-  $('gruss').textContent = `Hallo ${nutzer.kuerzel}`;
+  $('gruss').textContent = nutzer.gast ? 'Üben als Gast' : `Hallo ${nutzer.kuerzel}`;
+  $('gastband').hidden = !nutzer.gast;
   $('datum').textContent = new Date().toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' });
 
   [zustand.lernstand, zustand.versuche, zustand.ziel] = await Promise.all([
@@ -94,7 +108,7 @@ async function startseite() {
   $('tages-balken').style.width = heuteFertig ? '100%' : '0%';
   $('knopf-start').textContent = heuteFertig ? 'Noch eine Runde' : 'Loslegen';
 
-  $('version').textContent = 'Version 4' + (DB.uebungsmodus ? ' · Übungsmodus, Stand nur auf diesem Gerät' : '');
+  $('version').textContent = 'Version 5' + (DB.nurLokal() ? ' · Stand nur auf diesem Gerät' : '');
   zeichneKapitel();
   zeichneDiagnose($('diagnose'), zustand.versuche, 4);
   zeige('start');

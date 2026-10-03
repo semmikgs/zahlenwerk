@@ -1,4 +1,4 @@
-import { CONFIG, imUebungsmodus } from './config.js?v=4';
+import { CONFIG, imUebungsmodus } from './config.js?v=5';
 
 /* Kleiner Speicher-Helfer: nutzt localStorage, wenn erlaubt, sonst den
    Arbeitsspeicher. So läuft die Seite auch in strengen Browsern. */
@@ -50,6 +50,17 @@ export const DB = {
 
   nutzer() { return sitzung; },
 
+  // true, wenn nur auf diesem Gerät gespeichert wird: entweder weil noch keine
+  // Supabase-Zugangsdaten hinterlegt sind, oder weil ohne Anmeldung geübt wird.
+  nurLokal() { return this.uebungsmodus || sitzung?.gast === true; },
+
+  // Üben ohne Konto. Der Stand bleibt auf diesem Gerät und in diesem Browser.
+  alsGast() {
+    sitzung = { id: 'gast', kuerzel: 'Gast', klasse: '', rolle: 'gast', token: null, gast: true };
+    jsonSchreib('sitzung', sitzung);
+    return sitzung;
+  },
+
   async anmelden(kuerzel, passwort) {
     const kuerzelKlein = kuerzel.trim().toLowerCase();
 
@@ -84,7 +95,7 @@ export const DB = {
 
   async versucheSpeichern(zeilen) {
     if (!sitzung) return;
-    if (this.uebungsmodus) {
+    if (this.nurLokal()) {
       const alle = jsonLies(`versuche:${sitzung.id}`, []);
       alle.push(...zeilen.map((z) => ({ ...z, erstellt: new Date().toISOString() })));
       jsonSchreib(`versuche:${sitzung.id}`, alle.slice(-2000));
@@ -99,7 +110,7 @@ export const DB = {
 
   async versucheLaden(grenze = 600) {
     if (!sitzung) return [];
-    if (this.uebungsmodus) return jsonLies(`versuche:${sitzung.id}`, []).slice(-grenze);
+    if (this.nurLokal()) return jsonLies(`versuche:${sitzung.id}`, []).slice(-grenze);
     return await rest(`versuch?nutzer=eq.${sitzung.id}&select=vorlage,kapitel,tags,richtig,fehler,erstellt&order=erstellt.desc&limit=${grenze}`) || [];
   },
 
@@ -107,14 +118,14 @@ export const DB = {
 
   async lernstandLaden() {
     if (!sitzung) return {};
-    if (this.uebungsmodus) return jsonLies(`lernstand:${sitzung.id}`, {});
+    if (this.nurLokal()) return jsonLies(`lernstand:${sitzung.id}`, {});
     const zeilen = await rest(`lernstand?nutzer=eq.${sitzung.id}&select=vorlage,kapitel,box,faellig`) || [];
     return Object.fromEntries(zeilen.map((z) => [z.vorlage, z]));
   },
 
   async lernstandSpeichern(eintraege) {
     if (!sitzung || !eintraege.length) return;
-    if (this.uebungsmodus) {
+    if (this.nurLokal()) {
       const stand = jsonLies(`lernstand:${sitzung.id}`, {});
       for (const e of eintraege) stand[e.vorlage] = e;
       jsonSchreib(`lernstand:${sitzung.id}`, stand);
@@ -131,14 +142,14 @@ export const DB = {
 
   async zielLaden() {
     if (!sitzung) return { streak: 0, xp: 0, letzter_tag: null };
-    if (this.uebungsmodus) return jsonLies(`ziel:${sitzung.id}`, { streak: 0, xp: 0, letzter_tag: null });
+    if (this.nurLokal()) return jsonLies(`ziel:${sitzung.id}`, { streak: 0, xp: 0, letzter_tag: null });
     const z = await rest(`tagesziel?nutzer=eq.${sitzung.id}&select=streak,xp,letzter_tag`);
     return z?.[0] || { streak: 0, xp: 0, letzter_tag: null };
   },
 
   async zielSpeichern(ziel) {
     if (!sitzung) return;
-    if (this.uebungsmodus) { jsonSchreib(`ziel:${sitzung.id}`, ziel); return; }
+    if (this.nurLokal()) { jsonSchreib(`ziel:${sitzung.id}`, ziel); return; }
     await rest('tagesziel', {
       method: 'POST',
       headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },

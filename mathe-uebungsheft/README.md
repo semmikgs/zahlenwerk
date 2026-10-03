@@ -11,6 +11,13 @@ Teilkompetenzen es hakt.
 3. Die Adresse auf dem Handy öffnen, ein beliebiges Kürzel und ein Passwort
    mit mindestens drei Zeichen eingeben.
 
+Auf der Anmeldeseite gibt es den Knopf **Ohne Anmeldung üben**. Damit steht der
+gesamte Kurs sofort offen – Fortschritt, Serie und Punkte werden geführt, bleiben
+aber auf dem jeweiligen Gerät und tauchen in der Lehreransicht nicht auf. Das ist
+der Weg für eine erste Stunde, für Vertretung oder für Eltern, die hineinschauen
+wollen. Wer sich später anmeldet, fängt mit seinem Konto bei null an; die
+Gastdaten wandern nicht mit.
+
 Solange in `js/config.js` die Platzhalter stehen, läuft alles im **Übungsmodus**:
 Fortschritt bleibt nur auf dem jeweiligen Gerät, du siehst als Lehrkraft nichts.
 Zum Testen der Aufgaben reicht das vollkommen.
