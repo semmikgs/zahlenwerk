@@ -29,6 +29,10 @@ body{
   overscroll-behavior-y:none;
 }
 
+/* Muss vor allen display-Regeln stehen: sonst überschreiben Klassen wie
+   .knopf{display:block} das hidden-Attribut, und Elemente bleiben sichtbar. */
+[hidden]{display:none !important}
+
 .ansicht{display:none}
 .ansicht.sichtbar{display:block}
 
@@ -110,7 +114,8 @@ body{
 .zaehler{font-size:15px;font-weight:600;color:var(--grau);flex:0 0 auto;min-width:42px;text-align:right}
 
 /* --- Kapitel --- */
-.ueberschrift{font-size:15px;font-weight:700;color:var(--grau);margin:0 0 12px}
+.ueberschrift{font-size:15px;font-weight:700;color:var(--grau);margin:0 0 6px}
+.abschnitt-info{margin:0 0 14px;font-size:14px;color:var(--grau)}
 .kapitelliste{list-style:none;margin:0 0 32px;padding:0}
 .kapitelliste li{margin-bottom:10px}
 .kapitelliste button{
@@ -161,10 +166,12 @@ body{
   font:600 21px var(--rechen);color:var(--tinte-tief);text-align:center;cursor:pointer;
 }
 .antwort:active{background:#F1F5FB}
+.antwort.gewaehlt{border-color:var(--tinte);border-width:2.5px;background:#EEF3FA}
 .antwort.richtig{border-color:var(--gruen);background:#EDF6F1;color:var(--gruen)}
 .antwort.falsch{border-color:var(--rot);background:#FBEFEE;color:var(--rot)}
 .antwort[disabled]{cursor:default}
 
+.knopf-pruefen{margin-top:16px}
 .eingabe{display:grid;gap:10px}
 #in-antwort{
   width:100%;min-height:var(--tipp);padding:0 16px;text-align:center;
@@ -231,3 +238,13 @@ dialog::backdrop{background:rgba(18,43,87,.42)}
 }
 .hinweiskasten p{margin:0;font-size:16px}
 .hinweiskasten small{color:var(--grau)}
+
+/* --- Einstellungen --- */
+.einstellung{
+  display:flex;align-items:center;gap:12px;
+  min-height:var(--tipp);padding:12px 16px;margin-bottom:12px;
+  background:#fff;border:1.5px solid var(--linie);border-radius:14px;
+  font-size:16px;cursor:pointer;
+}
+.einstellung input{width:24px;height:24px;accent-color:var(--tinte);flex:0 0 auto}
+.version{font-size:13px;color:var(--grau);text-align:center;margin:0}

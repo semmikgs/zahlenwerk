@@ -1,9 +1,9 @@
-import { CONFIG } from './config.js';
-import { DB } from './db.js';
+import { CONFIG } from './config.js?v=4';
+import { DB, speicher } from './db.js?v=4';
 import {
   ladeKapitelliste, ladeKapitel, baueAufgabe, waehleVorlagen,
   naechsteWiederholung, auswertungNachTag, wuerfel, startwert, heute,
-} from './engine.js';
+} from './engine.js?v=4';
 
 const $ = (id) => document.getElementById(id);
 
@@ -24,6 +24,8 @@ const zustand = {
   versuche: [],
   ziel: { streak: 0, xp: 0, letzter_tag: null },
   lektion: null,
+  auswahl: null,
+  sofortPruefen: speicher.lies('sofort') === 'ja',
 };
 
 /* ---------------- Start ---------------- */
@@ -56,6 +58,12 @@ $('form-login').addEventListener('submit', async (e) => {
   }
 });
 
+$('schalter-sofort').checked = zustand.sofortPruefen;
+$('schalter-sofort').addEventListener('change', (e) => {
+  zustand.sofortPruefen = e.target.checked;
+  speicher.schreib('sofort', e.target.checked ? 'ja' : 'nein');
+});
+
 $('knopf-abmelden').addEventListener('click', () => {
   DB.abmelden();
   zeige('login');
@@ -79,13 +87,14 @@ async function startseite() {
     ? `${Math.round((richtig / zustand.versuche.length) * 100)}%` : '–';
 
   const heuteFertig = zustand.ziel.letzter_tag === heute();
-  $('tages-titel').textContent = heuteFertig ? 'Für heute erledigt' : 'Deine Lektion für heute';
+  $('tages-titel').textContent = heuteFertig ? 'Für heute erledigt' : 'Gemischt aus allen Kapiteln';
   $('tages-info').textContent = heuteFertig
-    ? 'Du kannst trotzdem weiterüben – es zählt für deine Punkte.'
-    : `${CONFIG.aufgabenProLektion} Aufgaben, ungefähr fünf Minuten.`;
+    ? 'Du kannst weiterüben – es zählt für deine Punkte, aber deine Serie ist schon sicher.'
+    : `${CONFIG.aufgabenProLektion} Aufgaben, ungefähr fünf Minuten. Enthält alles, was zur Wiederholung ansteht.`;
   $('tages-balken').style.width = heuteFertig ? '100%' : '0%';
   $('knopf-start').textContent = heuteFertig ? 'Noch eine Runde' : 'Loslegen';
 
+  $('version').textContent = 'Version 4' + (DB.uebungsmodus ? ' · Übungsmodus, Stand nur auf diesem Gerät' : '');
   zeichneKapitel();
   zeichneDiagnose($('diagnose'), zustand.versuche, 4);
   zeige('start');
@@ -96,8 +105,14 @@ function zeichneKapitel() {
   liste.innerHTML = '';
   for (const k of zustand.kapitel) {
     const gesamt = k.vorlagen.length;
-    const gelernt = k.vorlagen.filter((v) => (zustand.lernstand[v.id]?.box ?? 0) >= 3).length;
-    const anteil = gesamt ? gelernt / gesamt : 0;
+    const staerken = k.vorlagen.map((v) => Math.min(zustand.lernstand[v.id]?.box ?? 0, 3) / 3);
+    const geuebt = staerken.filter((x) => x > 0).length;
+    const sicher = staerken.filter((x) => x === 1).length;
+    const anteil = staerken.reduce((a, b) => a + b, 0) / gesamt;
+
+    const text = geuebt === 0
+      ? `${gesamt} Aufgabentypen · noch nicht geübt`
+      : `${geuebt} von ${gesamt} geübt · ${sicher} sitzen sicher`;
 
     const li = document.createElement('li');
     li.innerHTML = `
@@ -105,7 +120,7 @@ function zeichneKapitel() {
         ${ring(anteil)}
         <span>
           <strong>${k.titel}</strong>
-          <small>${gelernt} von ${gesamt} Aufgabentypen sitzen</small>
+          <small>${text}</small>
         </span>
       </button>`;
     li.querySelector('button').addEventListener('click', () => starteLektion([k]));
@@ -182,23 +197,47 @@ function zeichneAufgabe() {
   felder.innerHTML = '';
   const eingabe = $('form-eingabe');
 
+  zustand.auswahl = null;
+  $('in-antwort').value = '';
+  const pruefKnopf = $('knopf-pruefen');
+
   if (a.typ === 'mc') {
     eingabe.hidden = true;
+    pruefKnopf.hidden = false;
+    pruefKnopf.disabled = true;
     for (const option of a.optionen) {
       const b = document.createElement('button');
       b.type = 'button';
       b.className = 'antwort';
       b.textContent = anz(option.wert);
       b.dataset.wert = option.wert;
-      b.addEventListener('click', () => pruefe(option.wert === a.loesung, option.fehler, b));
+      b.addEventListener('click', () => waehle(option, b));
       felder.appendChild(b);
     }
   } else {
     eingabe.hidden = false;
-    $('in-antwort').value = '';
+    pruefKnopf.hidden = true;
+    $('form-eingabe').querySelector('button').disabled = false;
     $('in-antwort').focus({ preventScroll: true });
   }
 }
+
+// Antwort auswählen – solange nicht geprüft ist, kann beliebig umgewählt werden.
+function waehle(option, knopf) {
+  const a = zustand.lektion.aufgaben[zustand.lektion.index];
+  for (const b of $('antworten').children) b.classList.remove('gewaehlt');
+  knopf.classList.add('gewaehlt');
+  zustand.auswahl = { option, knopf };
+  $('knopf-pruefen').disabled = false;
+  if (zustand.sofortPruefen) pruefe(option.wert === a.loesung, option.fehler, knopf);
+}
+
+$('knopf-pruefen').addEventListener('click', () => {
+  const wahl = zustand.auswahl;
+  if (!wahl) return;
+  const a = zustand.lektion.aufgaben[zustand.lektion.index];
+  pruefe(wahl.option.wert === a.loesung, wahl.option.fehler, wahl.knopf);
+});
 
 $('form-eingabe').addEventListener('submit', (e) => {
   e.preventDefault();
@@ -213,8 +252,10 @@ function pruefe(richtig, fehler, knopf) {
   const a = l.aufgaben[l.index];
 
   if (a.typ === 'mc') {
+    $('knopf-pruefen').hidden = true;
     for (const b of $('antworten').children) {
       b.disabled = true;
+      b.classList.remove('gewaehlt');
       if (b.dataset.wert === a.loesung) b.classList.add('richtig');
     }
     if (!richtig && knopf) knopf.classList.add('falsch');
@@ -243,7 +284,6 @@ $('knopf-weiter').addEventListener('click', async () => {
   const l = zustand.lektion;
   l.index++;
   if (l.index < l.aufgaben.length) {
-    if (l.aufgaben[l.index].typ !== 'mc') $('form-eingabe').querySelector('button').disabled = false;
     zeichneAufgabe();
   } else {
     await beendeLektion();

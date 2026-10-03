@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Übungsheft – Lehreransicht</title>
-<link rel="stylesheet" href="css/stil.css">
+<link rel="stylesheet" href="css/stil.css?v=4">
 <style>
   .heft{max-width:760px}
   .waehler{display:flex;gap:10px;align-items:center;margin-bottom:24px;flex-wrap:wrap}
@@ -49,8 +49,8 @@
 </section>
 
 <script type="module">
-import { DB } from './js/db.js';
-import { ladeKapitelliste, ladeKapitel, auswertungNachTag, haeufigsteFehler } from './js/engine.js';
+import { DB } from './js/db.js?v=4';
+import { ladeKapitelliste, ladeKapitel, auswertungNachTag, haeufigsteFehler } from './js/engine.js?v=4';
 
 const $ = (id) => document.getElementById(id);
 const zeige = (n) => document.querySelectorAll('.ansicht').forEach(a => a.classList.toggle('sichtbar', a.id === `ansicht-${n}`));

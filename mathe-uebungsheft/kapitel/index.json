@@ -1,7 +1,21 @@
 {
   "hinweis": "Neues Kapitel: Datei in diesen Ordner legen und hier eine Zeile ergänzen. Die Reihenfolge in dieser Liste ist die Reihenfolge in der App.",
   "kapitel": [
-    { "id": "rationale-zahlen", "datei": "rationale-zahlen.js" },
-    { "id": "prozent", "datei": "prozent.js" }
+    {
+      "id": "rationale-zahlen",
+      "datei": "rationale-zahlen.js"
+    },
+    {
+      "id": "prozent",
+      "datei": "prozent.js"
+    },
+    {
+      "id": "terme",
+      "datei": "terme.js"
+    },
+    {
+      "id": "gleichungen",
+      "datei": "gleichungen.js"
+    }
   ]
 }

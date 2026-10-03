@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1C3F7C">
 <title>Mathe 9 – Übungsheft</title>
-<link rel="stylesheet" href="css/stil.css">
+<link rel="stylesheet" href="css/stil.css?v=4">
 </head>
 <body>
 
@@ -59,8 +59,15 @@
     <p class="abschnitt-info">Ein einzelnes Thema, so lange du willst. Zählt genauso für deine Punkte.</p>
     <ul class="kapitelliste" id="kapitelliste"></ul>
 
+    <h2 class="ueberschrift">Einstellung</h2>
+    <label class="einstellung">
+      <input type="checkbox" id="schalter-sofort">
+      <span>Antwort sofort prüfen, ohne den Prüfen-Knopf</span>
+    </label>
+
     <h2 class="ueberschrift">Woran du gerade arbeitest</h2>
     <ul class="diagnose" id="diagnose"><li class="diagnose-leer">Übe eine Lektion, dann steht hier, was schon sitzt und was noch wackelt.</li></ul>
+    <p class="version" id="version"></p>
   </div>
 </section>
 
@@ -117,6 +124,6 @@
   </div>
 </dialog>
 
-<script type="module" src="js/app.js"></script>
+<script type="module" src="js/app.js?v=4"></script>
 </body>
 </html>
