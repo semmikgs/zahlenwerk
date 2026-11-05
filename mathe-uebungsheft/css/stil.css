@@ -9,6 +9,7 @@
   --rot:#B5372B;
   --gruen:#2C6E52;
   --grau:#5A6472;
+  --gelb-stern:#C9941B;
   --linie:#E4E2DC;
 
   --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -268,3 +269,10 @@ dialog::backdrop{background:rgba(18,43,87,.42)}
   border-radius:0 12px 12px 0;
 }
 .gastband p{margin:0;flex:1;min-width:180px;font-size:15px;color:var(--grau)}
+
+/* --- Codeeingabe --- */
+.codefeld{
+  text-align:center;letter-spacing:.22em;text-transform:uppercase;
+  font:700 24px/1 var(--rechen);
+}
+.codefeld::placeholder{letter-spacing:.18em;font-weight:400;color:#AFB7C4}

@@ -1,66 +1,98 @@
-# Mathe-Übungsheft
+# Zahlenwerk – Mathe-Übungsheft
 
-Ein Übungssystem für den Handybrowser: tägliche Lektion, Erklärungen auf Abruf,
-automatische Wiederholung und eine Auswertung, die zeigt, an welchen
+Übungsplattform für den Handybrowser: tägliche Lektion mit Stern, Erklärungen
+auf Abruf, automatische Wiederholung und eine Auswertung, die zeigt, an welchen
 Teilkompetenzen es hakt.
 
-## Sofort ausprobieren
+## Ohne Einrichtung ausprobieren
 
-1. Ordner in ein GitHub-Repository legen.
-2. Unter *Settings → Pages* die Quelle auf `main / (root)` stellen.
-3. Die Adresse auf dem Handy öffnen, ein beliebiges Kürzel und ein Passwort
-   mit mindestens drei Zeichen eingeben.
-
-Auf der Anmeldeseite gibt es den Knopf **Ohne Anmeldung üben**. Damit steht der
-gesamte Kurs sofort offen – Fortschritt, Serie und Punkte werden geführt, bleiben
-aber auf dem jeweiligen Gerät und tauchen in der Lehreransicht nicht auf. Das ist
-der Weg für eine erste Stunde, für Vertretung oder für Eltern, die hineinschauen
-wollen. Wer sich später anmeldet, fängt mit seinem Konto bei null an; die
-Gastdaten wandern nicht mit.
-
-Solange in `js/config.js` die Platzhalter stehen, läuft alles im **Übungsmodus**:
-Fortschritt bleibt nur auf dem jeweiligen Gerät, du siehst als Lehrkraft nichts.
-Zum Testen der Aufgaben reicht das vollkommen.
+Seite öffnen, **Ohne Code üben** antippen. Der gesamte Kurs steht offen, der
+Fortschritt bleibt auf dem Gerät. Zum Testen der Aufgaben reicht das.
 
 Die Seite muss über eine Webadresse laufen. Ein Doppelklick auf `index.html`
 funktioniert nicht, weil Browser lokale Dateien nicht als Module laden.
 
-## Mit Konten und Auswertung
+## Einrichtung mit Konten und Auswertung
 
-1. Auf supabase.com ein kostenloses Projekt anlegen, als Region Frankfurt wählen.
-2. Im SQL-Editor `setup/supabase.sql` einmal komplett ausführen.
-3. Unter *Project Settings → API* die Project URL und den `anon`-Schlüssel
-   kopieren und in `js/config.js` eintragen.
-4. Unter *Authentication → Users* die Konten anlegen, als E-Mail
-   `kuerzel@uebungsheft.local`, zum Beispiel `9a-14@uebungsheft.local`.
-   Die Domain existiert nicht und wird nie angeschrieben.
-5. Den auskommentierten `insert`-Block am Ende des SQL-Skripts anpassen und
-   ausführen, damit jedes Konto seiner Klasse zugeordnet wird.
-6. Dein eigenes Konto auf `rolle = 'lehrer'` setzen, dann `lehrer.html` öffnen.
+**1. Datenbank anlegen**
 
-Der `anon`-Schlüssel darf öffentlich im Repository stehen. Der Zugriff wird
-nicht über den Schlüssel geregelt, sondern über die Zugriffsregeln in der
-Datenbank: Schüler sehen ausschließlich ihre eigenen Zeilen.
+`setup/supabase.sql` im SQL-Editor von Supabase einmal komplett ausführen.
+Das legt das Schema `zahlenwerk` an – getrennt von den anderen Schultools in
+derselben Instanz.
 
-Zwei Dinge zum Vormerken:
+**2. Schema freigeben**
 
-- Kostenlose Supabase-Projekte pausieren, wenn eine Woche lang niemand
-  zugreift. Nach den Ferien einmal im Dashboard aufwecken.
-- In der Datenbank stehen nur Kürzel und Übungsergebnisse, keine Namen. Die
-  Zuordnung Kürzel → Schüler behältst du auf Papier oder in IServ.
+*Project Settings → API → Exposed schemas* um `zahlenwerk` ergänzen.
+Ohne diesen Schritt antwortet die Datenbank nicht.
+
+**3. Schlüssel eintragen**
+
+*Project Settings → API* öffnen und den `anon public`-Schlüssel in
+`js/config.js` eintragen. Die Projekt-URL steht dort schon.
+
+Der anon-Schlüssel darf öffentlich im Repository stehen – dafür ist er gedacht.
+Den Zugriff regeln die Richtlinien in der Datenbank, nicht der Schlüssel.
+Der `service_role`-Schlüssel gehört dort **niemals** hinein.
+
+**4. Edge Function einrichten**
+
+Siehe `setup/edge-function/ANLEITUNG.md`. Einmalig, etwa zehn Minuten.
+Sie legt später die Schülerkonten an.
+
+**5. Eigenes Lehrerkonto**
+
+Unter *Authentication → Users* mit der dienstlichen E-Mail anlegen, dann den
+auskommentierten Block am Ende von `setup/supabase.sql` anpassen und ausführen.
+Danach ist `lehrer.html` erreichbar.
+
+Zwei Dinge zum Vormerken: Kostenlose Supabase-Projekte pausieren, wenn eine
+Woche lang niemand zugreift – nach den Ferien einmal im Dashboard aufwecken.
+Und in der Datenbank stehen nur Codes und Übungsergebnisse, keine Namen.
+
+## Zugänge für die Klasse
+
+Im Lehrerbereich unter *Zugänge*: Namensliste einfügen, Klasse eintragen,
+**Zugänge erzeugen**. Für jeden Namen entsteht ein Konto mit achtstelligem Code.
+Die Codes erscheinen als Streifen zum Ausschneiden; über *Drucken* lässt sich
+daraus eine PDF-Seite erzeugen.
+
+Die Codes benutzen keine verwechselbaren Zeichen – kein O neben 0, kein I neben
+1 – damit das Abtippen auf dem Handy klappt.
+
+**Die Namen werden nicht gespeichert.** Sie dienen nur dazu, die Codes den
+richtigen Streifen zuzuordnen. Geht die gedruckte Seite verloren, lässt sich die
+Zuordnung nicht wiederherstellen.
+
+Verliert ein Schüler seinen Streifen: im Lehrerbereich unter *Schüler* die Zeile
+anklicken und **Neuen Code vergeben**. Lernstand und Sterne bleiben erhalten.
+
+## Sterne
+
+Ein Stern pro Tag. Dafür reicht eines von beidem:
+
+- drei Viertel der Aufgaben einer Lektion richtig, oder
+- fünf Minuten aktiv geübt
+
+Gezählt wird nur die Zeit zwischen dem Erscheinen einer Aufgabe und der Antwort,
+je Aufgabe auf 90 Sekunden gedeckelt. Ein liegen gelassenes Handy sammelt damit
+keine Sterne.
+
+Fünf Sterne in einer Kalenderwoche ergeben den Wochenstern. Wochenendtage zählen
+mit, sind also Joker – wer in der Woche einen Tag verpasst, kann ihn nachholen.
 
 ## Ein Kapitel ergänzen
 
-1. Datei nach dem Muster von `kapitel/rationale-zahlen.js` in den Ordner legen.
+1. Datei nach dem Muster von `kapitel/terme.js` in den Kapitelordner legen.
 2. In `kapitel/index.json` eine Zeile ergänzen.
 
-Mehr ist nicht nötig – die App liest die Liste beim Start.
+Anzeigename, Reihenfolge und ob ein Kapitel aktiv ist oder im Archiv liegt,
+stellst du danach im Lehrerbereich unter *Kapitel* ein – ohne etwas zu pushen.
 
 Eine Kapiteldatei enthält vier Dinge:
 
 | Feld | Wozu |
 |---|---|
-| `grundlagen` | Erklärungen, die über „Ich brauche die Erklärung“ aufklappen |
+| `grundlagen` | Erklärungen, die über „Ich brauche die Erklärung" aufklappen |
 | `vorlagen` | Aufgabengeneratoren; `erzeuge(r)` liefert bei jedem Aufruf neue Zahlen |
 | `tagNamen` | Klartext für jede Teilkompetenz, erscheint in der Auswertung |
 | `fehlerNamen` | Klartext für jeden Denkfehler hinter einer falschen Antwort |
@@ -91,38 +123,41 @@ Eine Vorlage sieht so aus:
 ```
 
 Jeder Ablenker trägt den Denkfehler, der zu ihm führt. Genau daraus entsteht
-später der Satz „Division negativer Zahlen läuft schlechter als Multiplikation“
-in der Lehreransicht. Die App füllt auf mindestens sechs Antworten auf, damit
-Raten sich nicht lohnt, und mischt sie bei jedem Aufruf neu.
+später der Satz „Vorzeichenregel verdreht – 23 mal in dieser Klasse" im
+Lehrerbereich. Die App füllt auf mindestens sechs Antworten auf und mischt sie
+bei jedem Aufruf neu.
 
 ## Wiederholung
 
-Jede Vorlage wandert pro Schüler durch sieben Stufen. Richtig beantwortet
-rückt sie eine Stufe vor und kommt nach 1, 2, 4, 8, 16 bzw. 30 Tagen wieder.
-Falsch beantwortet fällt sie auf Stufe null zurück und erscheint schon in der
-nächsten Lektion – dann mit neuen Zahlen.
+Jede Vorlage wandert pro Schüler durch sieben Stufen. Richtig beantwortet rückt
+sie vor und kommt nach 1, 2, 4, 8, 16 bzw. 30 Tagen wieder; falsch beantwortet
+fällt sie auf null zurück und erscheint schon in der nächsten Lektion – dann mit
+neuen Zahlen.
 
-## Prüfen, ob die Aufgaben stimmen
+## Prüfen
 
 ```
 node test.mjs
 ```
 
-Das Skript baut jede Vorlage 400-mal, zeigt ein Beispiel und meldet doppelte
-Antworten, mehrdeutige Lösungen und fehlende Klartexte.
+Baut jede Vorlage 400-mal, zeigt ein Beispiel und meldet doppelte Antworten,
+mehrdeutige Lösungen und fehlende Klartexte.
 
 ## Dateien
 
 ```
-index.html              Schüler-App
-lehrer.html             Auswertung für dich
-css/stil.css            gesamtes Aussehen
-js/config.js            Supabase-Zugang und Kursparameter
-js/db.js                Speichern und Laden
-js/engine.js            Zufallszahlen, Aufgabenbau, Wiederholung, Auswertung
-js/app.js               Ablauf der App
-kapitel/index.json      Liste der Kapitel
-kapitel/*.js            die Kapitel selbst
-setup/supabase.sql      Tabellen und Zugriffsregeln
-test.mjs                Prüfskript
+index.html                     Schüler-App
+lehrer.html                    Lehrerbereich
+css/stil.css                   Aussehen der Schüler-App
+css/lehrer.css                 Aussehen des Lehrerbereichs
+js/config.js                   Zugangsdaten und Kursparameter
+js/db.js                       Speichern, Laden, Anmeldung
+js/engine.js                   Zufallszahlen, Aufgabenbau, Wiederholung, Auswertung
+js/app.js                      Ablauf der Schüler-App
+js/lehrer.js                   Ablauf des Lehrerbereichs
+kapitel/index.json             Liste der Kapitel
+kapitel/*.js                   die Kapitel selbst
+setup/supabase.sql             Schema, Views und Zugriffsregeln
+setup/edge-function/           Schülerverwaltung auf dem Server
+test.mjs                       Prüfskript
 ```

@@ -15,8 +15,11 @@ Die Druckfassung des QR-Codes liegt zusätzlich als SVG unter
 `bilder/qr-mathe-uebungsheft.svg` und bleibt in jeder Größe scharf.
 
 Ein Konto ist zum Ausprobieren nicht nötig: auf der Anmeldeseite führt
-**Ohne Anmeldung üben** direkt in den Kurs. Der Fortschritt bleibt dann auf dem
-Gerät und erscheint nicht in der Lehreransicht.
+**Ohne Code üben** direkt in den Kurs. Der Fortschritt bleibt dann auf dem Gerät
+und erscheint nicht im Lehrerbereich.
+
+Mit Code: Die Schüler bekommen einen gedruckten Streifen mit achtstelligem
+Zugangscode. Ein Feld, kein Passwort, keine Anmeldung bei Supabase.
 
 ## Was drin ist
 
@@ -24,11 +27,14 @@ Gerät und erscheint nicht in der Lehreransicht.
 |---|---|
 | `mathe-uebungsheft/` | die Plattform selbst |
 | `mathe-uebungsheft/kapitel/` | die Kapitel als einzelne Dateien |
-| `mathe-uebungsheft/setup/` | SQL für die Nutzerverwaltung |
+| `mathe-uebungsheft/setup/` | SQL und Serverfunktion für die Nutzerverwaltung |
 | `bilder/` | QR-Codes zum Teilen |
 
 Bisherige Kapitel: Rationale Zahlen, Prozentrechnung, Terme zusammenfassen,
 Gleichungen lösen.
+
+Ein Stern pro Tag, fünf Sterne ergeben den Wochenstern. Für den Tagesstern
+reicht eines von beidem: drei Viertel richtig oder fünf Minuten geübt.
 
 ## Wie es funktioniert
 
@@ -57,8 +63,10 @@ Alles Weitere steht in `mathe-uebungsheft/README.md`.
 ## Konten und Auswertung
 
 Ohne weitere Einrichtung läuft alles im Übungsmodus: Fortschritt bleibt auf dem
-jeweiligen Gerät. Für Schülerkonten und die Lehreransicht ist ein kostenloses
-Supabase-Projekt nötig; die Schritte stehen in `mathe-uebungsheft/README.md`,
-die Tabellen in `mathe-uebungsheft/setup/supabase.sql`.
+jeweiligen Gerät. Für Schülerkonten und den Lehrerbereich ist ein Supabase-Projekt
+nötig; die fünf Einrichtungsschritte stehen in `mathe-uebungsheft/README.md`.
+
+Zugänge legst du im Lehrerbereich an: Namensliste einfügen, Codes erzeugen,
+als Streifen drucken und ausschneiden.
 
 Gespeichert werden nur Kürzel und Übungsergebnisse, keine Namen.

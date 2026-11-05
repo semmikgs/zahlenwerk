@@ -1,15 +1,30 @@
-import { CONFIG } from './config.js?v=5';
-import { DB, speicher } from './db.js?v=5';
+import { CONFIG } from './config.js?v=6';
+import { DB, speicher, kalenderwoche } from './db.js?v=6';
 import {
   ladeKapitelliste, ladeKapitel, baueAufgabe, waehleVorlagen,
   naechsteWiederholung, auswertungNachTag, wuerfel, startwert, heute,
-} from './engine.js?v=5';
+} from './engine.js?v=6';
 
 const $ = (id) => document.getElementById(id);
 
 // Anzeige in deutscher Schreibweise: echtes Minuszeichen, Komma statt Punkt.
 const anz = (wert) => String(wert).replace('-', '−').replace('.', ',');
 const roh = (text) => text.replace(/[−–—]/g, '-').replace(',', '.').replace(/\s/g, '');
+/* Aktive Übungszeit. Gezählt wird nur vom Erscheinen einer Aufgabe bis zur
+   Antwort, je Aufgabe gedeckelt. Ein liegen gelassenes Handy sammelt damit
+   keine Sterne, und wer kurz weggeschaut hat, verliert nicht alles. */
+let aufgabeSeit = 0;
+const uhrStarten = () => { aufgabeSeit = Date.now(); };
+const uhrLesen = () => {
+  if (!aufgabeSeit) return 0;
+  const gemessen = Date.now() - aufgabeSeit;
+  aufgabeSeit = 0;
+  return Math.min(gemessen, CONFIG.maxDauerProAufgabeMs);
+};
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) uhrLesen(); else uhrStarten();
+});
+
 const zeige = (name) => {
   document.querySelectorAll('.ansicht').forEach((a) => a.classList.remove('sichtbar'));
   $(`ansicht-${name}`).classList.add('sichtbar');
@@ -22,7 +37,7 @@ const zustand = {
   fehlerNamen: {},
   lernstand: {},
   versuche: [],
-  ziel: { streak: 0, xp: 0, letzter_tag: null },
+  sterne: [],
   lektion: null,
   auswahl: null,
   sofortPruefen: speicher.lies('sofort') === 'ja',
@@ -47,8 +62,7 @@ $('form-login').addEventListener('submit', async (e) => {
   knopf.disabled = true;
   $('login-fehler').hidden = true;
   try {
-    await DB.anmelden($('in-kuerzel').value, $('in-passwort').value);
-    $('in-passwort').value = '';
+    await DB.mitCode($('in-code').value);
     await startseite();
   } catch (fehler) {
     $('login-fehler').textContent = fehler.message;
@@ -65,8 +79,7 @@ $('knopf-gast').addEventListener('click', async () => {
 
 $('knopf-gast-anmelden').addEventListener('click', () => {
   DB.abmelden();
-  $('in-kuerzel').value = '';
-  $('in-passwort').value = '';
+  $('in-code').value = '';
   $('login-fehler').hidden = true;
   zeige('login');
 });
@@ -86,32 +99,69 @@ $('knopf-abmelden').addEventListener('click', () => {
 
 async function startseite() {
   const nutzer = DB.nutzer();
-  $('gruss').textContent = nutzer.gast ? 'Üben als Gast' : `Hallo ${nutzer.kuerzel}`;
+  $('gruss').textContent = nutzer.gast ? 'Üben ohne Code' : `Hallo ${nutzer.name || nutzer.code}`;
   $('gastband').hidden = !nutzer.gast;
   $('datum').textContent = new Date().toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' });
 
-  [zustand.lernstand, zustand.versuche, zustand.ziel] = await Promise.all([
-    DB.lernstandLaden(), DB.versucheLaden(), DB.zielLaden(),
+  [zustand.lernstand, zustand.versuche, zustand.sterne] = await Promise.all([
+    DB.lernstandLaden(), DB.versucheLaden(), DB.sterneLaden(),
   ]);
 
   const richtig = zustand.versuche.filter((v) => v.richtig).length;
-  $('stat-streak').textContent = zustand.ziel.streak || 0;
-  $('stat-xp').textContent = zustand.ziel.xp || 0;
+  const dieseWoche = sterneDieserWoche();
+  $('stat-streak').textContent = `${dieseWoche}/${CONFIG.sterneProWoche}`;
+  $('stat-xp').textContent = zustand.sterne.length;
   $('stat-quote').textContent = zustand.versuche.length
     ? `${Math.round((richtig / zustand.versuche.length) * 100)}%` : '–';
 
-  const heuteFertig = zustand.ziel.letzter_tag === heute();
-  $('tages-titel').textContent = heuteFertig ? 'Für heute erledigt' : 'Gemischt aus allen Kapiteln';
-  $('tages-info').textContent = heuteFertig
-    ? 'Du kannst weiterüben – es zählt für deine Punkte, aber deine Serie ist schon sicher.'
-    : `${CONFIG.aufgabenProLektion} Aufgaben, ungefähr fünf Minuten. Enthält alles, was zur Wiederholung ansteht.`;
-  $('tages-balken').style.width = heuteFertig ? '100%' : '0%';
-  $('knopf-start').textContent = heuteFertig ? 'Noch eine Runde' : 'Loslegen';
+  const sternHeute = zustand.sterne.some((s) => s.tag === heute());
+  const tag = tagesbilanz();
 
-  $('version').textContent = 'Version 5' + (DB.nurLokal() ? ' · Stand nur auf diesem Gerät' : '');
+  $('tages-titel').textContent = sternHeute
+    ? 'Stern für heute geholt'
+    : 'Gemischt aus allen Kapiteln';
+
+  if (sternHeute) {
+    $('tages-info').textContent = dieseWoche >= CONFIG.sterneProWoche
+      ? 'Der Wochenstern ist sicher. Weiterüben zählt trotzdem.'
+      : `Noch ${CONFIG.sterneProWoche - dieseWoche} Sterne bis zum Wochenstern.`;
+    $('tages-balken').style.width = '100%';
+  } else if (tag.zeitMs > 0) {
+    const fehlen = Math.max(0, CONFIG.sternZeitMs - tag.zeitMs);
+    $('tages-info').textContent = fehlen < 90000
+      ? `Fast geschafft – noch etwa ${Math.ceil(fehlen / 60000)} Minute und der Stern ist deiner.`
+      : `${CONFIG.aufgabenProLektion} Aufgaben. Für den Stern: drei Viertel richtig oder fünf Minuten üben.`;
+    $('tages-balken').style.width = `${Math.min(100, Math.round((tag.zeitMs / CONFIG.sternZeitMs) * 100))}%`;
+  } else {
+    $('tages-info').textContent = `${CONFIG.aufgabenProLektion} Aufgaben, ungefähr fünf Minuten. Enthält alles, was zur Wiederholung ansteht.`;
+    $('tages-balken').style.width = '0%';
+  }
+  $('knopf-start').textContent = sternHeute ? 'Noch eine Runde' : 'Loslegen';
+
+  $('version').textContent = 'Version 6' + (DB.nurLokal() ? ' · Stand nur auf diesem Gerät' : '');
   zeichneKapitel();
   zeichneDiagnose($('diagnose'), zustand.versuche, 4);
   zeige('start');
+}
+
+/* Wie viele Sterne liegen in der laufenden Kalenderwoche? */
+function sterneDieserWoche() {
+  const { jahr, kw } = kalenderwoche();
+  return zustand.sterne.filter((s) => {
+    const d = kalenderwoche(new Date(s.tag));
+    return d.jahr === jahr && d.kw === kw;
+  }).length;
+}
+
+/* Was wurde heute schon geschafft? Grundlage für den Tagesstern. */
+function tagesbilanz() {
+  const heuteStr = heute();
+  const heutige = zustand.versuche.filter((v) => (v.erstellt || '').slice(0, 10) === heuteStr);
+  return {
+    anzahl: heutige.length,
+    richtig: heutige.filter((v) => v.richtig).length,
+    zeitMs: heutige.reduce((summe, v) => summe + (v.dauer_ms || 0), 0),
+  };
 }
 
 function zeichneKapitel() {
@@ -185,6 +235,8 @@ function starteLektion(kapitelAuswahl, runde = 0) {
   const paare = waehleVorlagen(kapitelAuswahl, zustand.lernstand, CONFIG.aufgabenProLektion, r);
 
   zustand.lektion = {
+    id: (crypto.randomUUID?.() || `${Date.now()}-${Math.random().toString(16).slice(2)}`),
+    art: kapitelAuswahl.length === zustand.kapitel.length ? 'tages' : 'kapitel',
     quelle: kapitelAuswahl,
     runde,
     index: 0,
@@ -234,6 +286,8 @@ function zeichneAufgabe() {
     $('form-eingabe').querySelector('button').disabled = false;
     $('in-antwort').focus({ preventScroll: true });
   }
+
+  uhrStarten();
 }
 
 // Antwort auswählen – solange nicht geprüft ist, kann beliebig umgewählt werden.
@@ -280,6 +334,7 @@ function pruefe(richtig, fehler, knopf) {
   l.protokoll.push({
     kapitel: a.kapitelId, vorlage: a.vorlageId, tags: a.tags,
     richtig, fehler: richtig ? null : (fehler || 'eigene-eingabe'),
+    dauer_ms: uhrLesen(),
   });
 
   const feld = $('rueckmeldung');
@@ -318,6 +373,8 @@ $('knopf-dialog-zu').addEventListener('click', () => $('dialog-grundlage').close
 async function beendeLektion() {
   const l = zustand.lektion;
   const richtig = l.protokoll.filter((p) => p.richtig).length;
+  const quote = richtig / l.protokoll.length;
+  const zeitLektion = l.protokoll.reduce((summe, p) => summe + (p.dauer_ms || 0), 0);
 
   const standNeu = l.protokoll.map((p) => ({
     kapitel: p.kapitel,
@@ -326,33 +383,80 @@ async function beendeLektion() {
   }));
   for (const s of standNeu) zustand.lernstand[s.vorlage] = s;
 
-  const vorher = zustand.ziel.letzter_tag;
-  const gestern = new Date(Date.now() - 864e5).toISOString().slice(0, 10);
-  const ziel = {
-    letzter_tag: heute(),
-    xp: (zustand.ziel.xp || 0) + richtig * CONFIG.punkteProRichtig,
-    streak: vorher === heute() ? zustand.ziel.streak
-          : vorher === gestern ? (zustand.ziel.streak || 0) + 1 : 1,
+  // Für die Tagesbilanz zählen die eben bearbeiteten Aufgaben mit.
+  const jetzt = new Date().toISOString();
+  zustand.versuche = [...l.protokoll.map((p) => ({ ...p, erstellt: jetzt })), ...zustand.versuche];
+
+  const lektion = {
+    id: l.id,
+    tag: heute(),
+    art: l.art,
+    kapitel: l.art === 'kapitel' ? l.quelle[0].id : null,
+    aufgaben: l.protokoll.length,
+    richtig,
+    aktive_zeit_ms: zeitLektion,
   };
-  zustand.ziel = ziel;
-  zustand.versuche = [...l.protokoll, ...zustand.versuche];
+
+  // Tagesstern: drei Viertel richtig in einer Lektion ODER fünf Minuten am Tag.
+  const tag = tagesbilanz();
+  const hatteSchonStern = zustand.sterne.some((s) => s.tag === heute());
+  const durchQuote = quote >= CONFIG.sternQuote;
+  const durchZeit = tag.zeitMs >= CONFIG.sternZeitMs;
+  const sternNeu = !hatteSchonStern && (durchQuote || durchZeit);
+
+  if (sternNeu) {
+    const stern = {
+      tag: heute(),
+      grund: durchQuote ? 'quote' : 'zeit',
+      quote: Math.round(quote * 1000) / 1000,
+      zeit_ms: tag.zeitMs,
+    };
+    zustand.sterne = [stern, ...zustand.sterne];
+  }
 
   try {
     await Promise.all([
-      DB.versucheSpeichern(l.protokoll),
+      DB.versucheSpeichern(l.protokoll.map((p) => ({ ...p, lektion: l.id }))),
       DB.lernstandSpeichern(standNeu),
-      DB.zielSpeichern(ziel),
+      DB.lektionSpeichern(lektion),
+      sternNeu ? DB.sternSetzen(zustand.sterne[0]) : Promise.resolve(),
     ]);
   } catch (fehler) {
     console.warn('Speichern fehlgeschlagen:', fehler);
   }
 
-  $('siegel').textContent = richtig >= l.aufgaben.length * 0.75 ? '✓' : '↻';
-  $('siegel').style.background = richtig >= l.aufgaben.length * 0.75 ? 'var(--gruen)' : 'var(--tinte)';
-  $('fertig-titel').textContent = `${richtig} von ${l.aufgaben.length} richtig`;
-  $('fertig-text').textContent = richtig >= l.aufgaben.length * 0.75
-    ? `Das war stark. ${richtig * CONFIG.punkteProRichtig} Punkte dazu.`
-    : 'Die schwierigen kommen bald wieder – dann mit neuen Zahlen.';
+  zeichneAbschluss({ richtig, quote, sternNeu, hatteSchonStern, tag, durchQuote });
+}
+
+function zeichneAbschluss({ richtig, quote, sternNeu, hatteSchonStern, tag, durchQuote }) {
+  const l = zustand.lektion;
+  const siegel = $('siegel');
+  const inWoche = sterneDieserWoche();
+  const fehlendeZeit = Math.max(0, CONFIG.sternZeitMs - tag.zeitMs);
+
+  if (sternNeu) {
+    siegel.textContent = '★';
+    siegel.style.background = 'var(--gelb-stern)';
+    $('fertig-titel').textContent = 'Stern verdient';
+    $('fertig-text').textContent = inWoche >= CONFIG.sterneProWoche
+      ? 'Damit steht der Wochenstern. Stark.'
+      : durchQuote
+        ? `${richtig} von ${l.protokoll.length} richtig. Noch ${CONFIG.sterneProWoche - inWoche} Sterne bis zum Wochenstern.`
+        : `Fünf Minuten durchgehalten. Noch ${CONFIG.sterneProWoche - inWoche} Sterne bis zum Wochenstern.`;
+  } else if (hatteSchonStern) {
+    siegel.textContent = '✓';
+    siegel.style.background = 'var(--gruen)';
+    $('fertig-titel').textContent = `${richtig} von ${l.protokoll.length} richtig`;
+    $('fertig-text').textContent = 'Den Stern für heute hattest du schon. Diese Runde zählt trotzdem für deinen Fortschritt.';
+  } else {
+    siegel.textContent = '↻';
+    siegel.style.background = 'var(--tinte)';
+    $('fertig-titel').textContent = `${richtig} von ${l.protokoll.length} richtig`;
+    $('fertig-text').textContent = fehlendeZeit <= 120000
+      ? `Übe weiter – noch etwa ${Math.max(1, Math.ceil(fehlendeZeit / 60000))} Minute, dann gibt es den Stern auch so.`
+      : 'Für den Stern fehlt noch etwas: drei Viertel richtig oder fünf Minuten üben. Die schwierigen kommen gleich wieder, dann mit neuen Zahlen.';
+  }
+
   zeichneDiagnose($('fertig-diagnose'), l.protokoll, 3);
   zeige('fertig');
 }

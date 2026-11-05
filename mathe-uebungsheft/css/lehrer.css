@@ -1,0 +1,167 @@
+/* Lehrerbereich – gleiche Farben wie das Schülerheft, aber für
+   Laptop und Tablet gebaut: breiter, dichter, mehr auf einen Blick. */
+
+:root{
+  --papier:#FBFAF7;
+  --karo:#D9E2EF;
+  --tinte:#1C3F7C;
+  --tinte-tief:#122B57;
+  --rot:#B5372B;
+  --gruen:#2C6E52;
+  --gelb:#9A6B12;
+  --grau:#5A6472;
+  --linie:#E4E2DC;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+[hidden]{display:none !important}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--papier);color:#1A1D23;
+  font:400 16px/1.5 var(--sans);font-variant-numeric:tabular-nums;
+}
+
+.ansicht{display:none}
+.ansicht.sichtbar{display:block}
+.bahn{max-width:1060px;margin:0 auto;padding:0 20px 64px}
+.schmal{max-width:430px}
+
+/* --- Kopf --- */
+.kopfzeile{
+  position:sticky;top:0;z-index:10;background:var(--papier);
+  border-bottom:1.5px solid var(--linie);margin-bottom:28px;
+}
+.kopfzeile-innen{
+  max-width:1060px;margin:0 auto;padding:14px 20px;
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+}
+.wortmarke{font-size:20px;font-weight:700;color:var(--tinte-tief);margin:0;flex:0 0 auto}
+.wortmarke span{font-weight:400;color:var(--grau)}
+.kopfzeile-rechts{margin-left:auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
+/* --- Reiter --- */
+.reiter{display:flex;gap:4px;flex-wrap:wrap;margin:0 auto;max-width:1060px;padding:0 20px}
+.reiter button{
+  padding:10px 16px;border:none;background:none;cursor:pointer;
+  font:600 15px var(--sans);color:var(--grau);
+  border-bottom:3px solid transparent;margin-bottom:-1.5px;
+}
+.reiter button[aria-current="true"]{color:var(--tinte-tief);border-bottom-color:var(--tinte)}
+
+/* --- Bausteine --- */
+h1{font-size:30px;color:var(--tinte-tief);margin:40px 0 6px;letter-spacing:-.02em}
+h2{font-size:19px;color:var(--tinte-tief);margin:36px 0 12px}
+h3{font-size:16px;color:var(--grau);margin:24px 0 10px}
+.hinweis{color:var(--grau);font-size:15px;margin:0 0 18px;max-width:62ch}
+
+.feld{display:block;margin-bottom:14px}
+.feld > span{display:block;font-size:14px;font-weight:600;color:var(--grau);margin-bottom:5px}
+input[type=text],input[type=email],input[type=password],input[type=number],select,textarea{
+  width:100%;padding:11px 14px;font:400 16px var(--sans);color:#1A1D23;
+  background:#fff;border:1.5px solid var(--linie);border-radius:10px;
+}
+textarea{min-height:150px;resize:vertical;line-height:1.6}
+input:focus-visible,select:focus-visible,textarea:focus-visible{
+  outline:3px solid var(--tinte);outline-offset:2px;border-color:var(--tinte);
+}
+
+.knopf{
+  padding:11px 18px;border:none;border-radius:10px;cursor:pointer;
+  font:600 15px var(--sans);background:var(--tinte);color:#fff;
+}
+.knopf:active{transform:translateY(1px)}
+.knopf[disabled]{background:#A9B3C4;cursor:default}
+.knopf-rand{background:#fff;color:var(--tinte);border:1.5px solid var(--karo)}
+.knopf-warn{background:#fff;color:var(--rot);border:1.5px solid #E8C9C5}
+.knopf-klein{padding:7px 12px;font-size:14px}
+.knopfreihe{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:16px 0}
+
+.fehler{color:var(--rot);font-size:15px;margin:0 0 12px}
+.erfolg{color:var(--gruen);font-size:15px;margin:0 0 12px}
+
+/* --- Kennzahlen --- */
+.kennzahlen{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:8px}
+.kennzahl{background:#fff;border:1.5px solid var(--linie);border-radius:12px;padding:14px 16px}
+.kennzahl strong{display:block;font-size:27px;color:var(--tinte-tief);line-height:1.15}
+.kennzahl span{display:block;font-size:13px;color:var(--grau);margin-top:3px}
+
+/* --- Tabellen --- */
+.tabelle{width:100%;border-collapse:collapse;font-size:15px;background:#fff;
+  border:1.5px solid var(--linie);border-radius:12px;overflow:hidden}
+.tabelle th{
+  text-align:left;font-size:13px;color:var(--grau);font-weight:600;
+  padding:10px 12px;border-bottom:1.5px solid var(--linie);background:#FDFCFA;
+  white-space:nowrap;
+}
+.tabelle td{padding:11px 12px;border-bottom:1px solid var(--linie);vertical-align:middle}
+.tabelle tr:last-child td{border-bottom:none}
+.tabelle tbody tr:hover{background:#F7F9FC}
+.rechts{text-align:right}
+.code{font:600 15px var(--mono);letter-spacing:.08em;color:var(--tinte-tief)}
+.klickbar{cursor:pointer}
+
+.quote{font-weight:700}
+.q-stark{color:var(--gruen)} .q-mittel{color:var(--gelb)} .q-schwach{color:var(--rot)}
+
+/* --- Balken in Tabellenzellen --- */
+.messbalken{display:block;height:6px;background:var(--karo);border-radius:99px;overflow:hidden;min-width:70px}
+.messbalken i{display:block;height:100%;border-radius:99px;background:var(--tinte)}
+.messbalken.schwach i{background:var(--rot)}
+.messbalken.mittel i{background:var(--gelb)}
+.messbalken.stark  i{background:var(--gruen)}
+
+/* --- Knackpunkte --- */
+.knackpunkt{
+  background:#fff;border:1.5px solid var(--linie);border-left:4px solid var(--rot);
+  border-radius:0 12px 12px 0;padding:13px 16px;margin-bottom:10px;
+}
+.knackpunkt p{margin:0;font-size:16px}
+.knackpunkt small{color:var(--grau)}
+
+.leer{color:var(--grau);font-size:15px;padding:16px 0}
+
+/* --- Codeliste zum Drucken --- */
+.streifen{
+  display:grid;grid-template-columns:repeat(2,1fr);gap:0;
+  border:1px dashed #AAB2BE;border-right:none;border-bottom:none;
+}
+.streifen div{
+  border-right:1px dashed #AAB2BE;border-bottom:1px dashed #AAB2BE;
+  padding:12px 16px;min-height:88px;
+}
+.streifen b{display:block;font-size:15px;font-weight:600;margin-bottom:4px}
+.streifen .zugang{font:700 23px var(--mono);letter-spacing:.14em;color:var(--tinte-tief)}
+.streifen small{display:block;font-size:11px;color:var(--grau);margin-top:5px}
+
+@media print{
+  body{background:#fff}
+  .kopfzeile,.reiter,.knopfreihe,.hinweis,.nicht-drucken{display:none !important}
+  .bahn{max-width:none;padding:0}
+  h1{margin:0 0 4px;font-size:20px}
+  .streifen{border-color:#999}
+  .streifen div{border-color:#999;break-inside:avoid}
+  @page{size:A4;margin:12mm}
+}
+
+/* --- Schülerdetail --- */
+dialog{
+  border:none;border-radius:14px;padding:0;width:min(640px,94vw);
+  background:var(--papier);box-shadow:0 12px 40px rgba(18,43,87,.22);
+}
+dialog::backdrop{background:rgba(18,43,87,.4)}
+.dialog-innen{padding:24px}
+.dialog-kopf{display:flex;align-items:baseline;gap:12px;margin-bottom:4px}
+.dialog-kopf h2{margin:0}
+
+/* --- Schrittliste der Wochenaufgabe --- */
+.schritt{
+  display:grid;grid-template-columns:1fr 150px 40px;gap:10px;align-items:start;
+  margin-bottom:10px;
+}
+.schritt input{margin:0}
+@media (max-width:640px){
+  .schritt{grid-template-columns:1fr}
+  .streifen{grid-template-columns:1fr}
+}

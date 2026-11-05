@@ -3,142 +3,221 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Übungsheft – Lehreransicht</title>
-<link rel="stylesheet" href="css/stil.css?v=5">
-<style>
-  .heft{max-width:760px}
-  .waehler{display:flex;gap:10px;align-items:center;margin-bottom:24px;flex-wrap:wrap}
-  .waehler select{min-height:44px;padding:0 12px;font:inherit;border:1.5px solid var(--linie);border-radius:10px;background:#fff}
-</style>
+<meta name="robots" content="noindex">
+<title>Zahlenwerk – Lehrerbereich</title>
+<link rel="stylesheet" href="css/lehrer.css?v=6">
 </head>
 <body>
 
+<!-- ======================= ANMELDUNG ======================= -->
 <section id="ansicht-login" class="ansicht sichtbar">
-  <div class="heft">
-    <h1 class="marke">Lehreransicht<span class="marke-klasse">Mathe 9 – Übungsheft</span></h1>
+  <div class="bahn schmal">
+    <h1>Lehrerbereich</h1>
+    <p class="hinweis">Anmeldung mit der E-Mail-Adresse, die in Supabase hinterlegt ist.</p>
     <form id="form-login" autocomplete="off">
-      <label class="feld"><span>Kürzel</span><input id="in-kuerzel" type="text" autocapitalize="none" spellcheck="false" required></label>
-      <label class="feld"><span>Passwort</span><input id="in-passwort" type="password" required></label>
-      <p id="login-fehler" class="fehlermeldung" hidden></p>
-      <button class="knopf knopf-haupt" type="submit">Anmelden</button>
+      <label class="feld"><span>E-Mail</span>
+        <input id="in-email" type="email" autocapitalize="none" spellcheck="false" required></label>
+      <label class="feld"><span>Passwort</span>
+        <input id="in-passwort" type="password" required></label>
+      <p id="login-fehler" class="fehler" hidden></p>
+      <button class="knopf" type="submit">Anmelden</button>
     </form>
+    <p class="hinweis" id="login-hinweis" style="margin-top:28px"></p>
   </div>
 </section>
 
-<section id="ansicht-daten" class="ansicht">
-  <div class="heft">
-    <div class="waehler">
-      <select id="klasse-wahl"></select>
-      <button class="knopf-klein" id="knopf-neu">Aktualisieren</button>
-      <button class="knopf-klein" id="knopf-csv">Als Tabelle speichern</button>
-      <button class="knopf-klein" id="knopf-abmelden">Abmelden</button>
+<!-- ======================= ARBEITSFLÄCHE ======================= -->
+<section id="ansicht-arbeit" class="ansicht">
+  <header class="kopfzeile nicht-drucken">
+    <div class="kopfzeile-innen">
+      <p class="wortmarke">Zahlenwerk <span>Lehrerbereich</span></p>
+      <div class="kopfzeile-rechts">
+        <select id="klasse-wahl" style="width:auto"></select>
+        <button class="knopf knopf-rand knopf-klein" id="knopf-neu">Neu laden</button>
+        <button class="knopf knopf-rand knopf-klein" id="knopf-abmelden">Abmelden</button>
+      </div>
     </div>
+    <nav class="reiter" id="reiter">
+      <button data-blatt="ueberblick" aria-current="true">Überblick</button>
+      <button data-blatt="schueler">Schüler</button>
+      <button data-blatt="zugaenge">Zugänge</button>
+      <button data-blatt="wochenaufgabe">Wochenaufgabe</button>
+      <button data-blatt="kapitel">Kapitel</button>
+    </nav>
+  </header>
 
-    <h2 class="ueberschrift">Woran die Klasse gerade scheitert</h2>
+  <!-- ---------- Überblick ---------- -->
+  <div class="bahn blatt" id="blatt-ueberblick">
+    <h2>Wie die Klasse steht</h2>
+    <div class="kennzahlen" id="kennzahlen"></div>
+
+    <h2>Woran die Klasse scheitert</h2>
+    <p class="hinweis">Die häufigsten Denkfehler, abgeleitet aus den tatsächlich gewählten falschen Antworten.</p>
     <div id="klassenfehler"></div>
 
-    <h2 class="ueberschrift">Teilkompetenzen im Klassenschnitt</h2>
-    <ul class="diagnose" id="klassen-tags"></ul>
-
-    <h2 class="ueberschrift">Einzelne Schüler</h2>
+    <h2>Teilkompetenzen</h2>
+    <p class="hinweis">Sortiert nach Erfolgsquote. Was oben steht, gehört in die nächste Stunde.</p>
     <table class="tabelle">
-      <thead><tr><th>Kürzel</th><th>Aufgaben</th><th>Richtig</th><th>Zuletzt</th><th>Schwächster Bereich</th></tr></thead>
-      <tbody id="schuelerliste"></tbody>
+      <thead><tr><th>Teilkompetenz</th><th class="rechts">Aufgaben</th><th class="rechts">Richtig</th><th style="width:150px">Quote</th></tr></thead>
+      <tbody id="tabelle-tags"></tbody>
     </table>
+
+    <h2>Nach Kapitel</h2>
+    <table class="tabelle">
+      <thead><tr><th>Kapitel</th><th class="rechts">Aufgaben</th><th class="rechts">Ø Zeit</th><th style="width:150px">Quote</th></tr></thead>
+      <tbody id="tabelle-kapitel"></tbody>
+    </table>
+
+    <h2>Übungszeit nach Tagen</h2>
+    <table class="tabelle">
+      <thead><tr><th>Tag</th><th class="rechts">Aktive Schüler</th><th class="rechts">Aufgaben</th><th class="rechts">Sterne</th></tr></thead>
+      <tbody id="tabelle-tage"></tbody>
+    </table>
+  </div>
+
+  <!-- ---------- Schüler ---------- -->
+  <div class="bahn blatt" id="blatt-schueler" hidden>
+    <h2>Einzelne Schüler</h2>
+    <p class="hinweis">Eine Zeile anklicken öffnet das vollständige Bild zu diesem Schüler.</p>
+    <div class="knopfreihe">
+      <button class="knopf knopf-rand knopf-klein" id="knopf-csv">Als Tabelle speichern</button>
+    </div>
+    <table class="tabelle">
+      <thead><tr>
+        <th>Code</th><th>Spitzname</th>
+        <th class="rechts">Aufgaben</th><th style="width:130px">Quote</th>
+        <th class="rechts">Ø Zeit</th><th class="rechts">Sterne</th>
+        <th class="rechts">Zuletzt</th><th>Schwächster Bereich</th>
+      </tr></thead>
+      <tbody id="tabelle-schueler"></tbody>
+    </table>
+  </div>
+
+  <!-- ---------- Zugänge ---------- -->
+  <div class="bahn blatt" id="blatt-zugaenge" hidden>
+    <h2>Neue Zugänge anlegen</h2>
+    <p class="hinweis">
+      Namen einfügen – einen je Zeile, Komma oder Tabulator gehen auch. Für jeden entsteht
+      ein Konto mit eigenem Code. Die Namen werden nur zum Drucken verwendet und
+      <strong>nicht gespeichert</strong>; in der Datenbank steht am Ende nur der Code.
+      Die gedruckte Seite ist deine einzige Zuordnung – heb sie auf.
+    </p>
+
+    <div style="display:grid;grid-template-columns:1fr 200px;gap:16px;align-items:start">
+      <label class="feld"><span>Namen</span>
+        <textarea id="in-namen" placeholder="Lena Ahrens&#10;Jonas Beckmann&#10;Mia Cordes"></textarea></label>
+      <label class="feld"><span>Klasse</span>
+        <input id="in-klasse" type="text" placeholder="9a"></label>
+    </div>
+
+    <p id="zugang-fehler" class="fehler" hidden></p>
+    <div class="knopfreihe">
+      <button class="knopf" id="knopf-anlegen">Zugänge erzeugen</button>
+      <span id="zugang-stand" class="hinweis" style="margin:0"></span>
+    </div>
+
+    <div id="codeliste" hidden>
+      <h1 id="codeliste-titel">Zahlenwerk – Zugangscodes</h1>
+      <p class="hinweis nicht-drucken">
+        Zum Drucken: Strg&nbsp;+&nbsp;P, als Ziel „Als PDF speichern“ wählen.
+        An den gestrichelten Linien schneiden.
+      </p>
+      <div class="knopfreihe">
+        <button class="knopf" id="knopf-drucken">Drucken oder als PDF sichern</button>
+        <button class="knopf knopf-rand" id="knopf-kopieren">Liste in die Zwischenablage</button>
+      </div>
+      <div class="streifen" id="streifen"></div>
+    </div>
+  </div>
+
+  <!-- ---------- Wochenaufgabe ---------- -->
+  <div class="bahn blatt" id="blatt-wochenaufgabe" hidden>
+    <h2>Wochenaufgabe</h2>
+    <p class="hinweis">
+      Eine Textaufgabe auf höherem Niveau, die sich nicht im Kopf lösen lässt. Sie wird in
+      Schritten abgefragt, damit tatsächlich schriftlich gerechnet wird. Wer sie löst,
+      bekommt einen Schweif an den Wochenstern.
+    </p>
+
+    <div style="display:grid;grid-template-columns:1fr 110px 110px;gap:16px">
+      <label class="feld"><span>Titel</span>
+        <input id="wa-titel" type="text" placeholder="Handyvertrag"></label>
+      <label class="feld"><span>Jahr</span>
+        <input id="wa-jahr" type="number"></label>
+      <label class="feld"><span>Kalenderwoche</span>
+        <input id="wa-kw" type="number" min="1" max="53"></label>
+    </div>
+
+    <label class="feld"><span>Aufgabentext</span>
+      <textarea id="wa-text" placeholder="Lena vergleicht zwei Handyverträge ..."></textarea></label>
+
+    <h3>Schritte</h3>
+    <p class="hinweis">Jeder Schritt fragt ein Zwischenergebnis ab. Zwei bis vier sind sinnvoll.</p>
+    <div id="wa-schritte"></div>
+    <div class="knopfreihe">
+      <button class="knopf knopf-rand knopf-klein" id="knopf-schritt-dazu">Schritt hinzufügen</button>
+    </div>
+
+    <p id="wa-meldung" class="erfolg" hidden></p>
+    <div class="knopfreihe">
+      <button class="knopf" id="knopf-wa-speichern">Wochenaufgabe speichern</button>
+    </div>
+
+    <h3>Bisherige Wochenaufgaben</h3>
+    <table class="tabelle">
+      <thead><tr><th>KW</th><th>Titel</th><th class="rechts">Schritte</th><th class="rechts">Gelöst von</th><th></th></tr></thead>
+      <tbody id="tabelle-wa"></tbody>
+    </table>
+  </div>
+
+  <!-- ---------- Kapitel ---------- -->
+  <div class="bahn blatt" id="blatt-kapitel" hidden>
+    <h2>Kapitel</h2>
+    <p class="hinweis">
+      Die Inhalte liegen als Dateien im Repository. Hier legst du fest, wie ein Kapitel heißt,
+      in welcher Reihenfolge es erscheint und ob es aktiv ist oder im Archiv liegt.
+      Archivierte Kapitel verschwinden aus der Tagesaufgabe, bleiben aber zum Nachüben erreichbar.
+    </p>
+    <table class="tabelle">
+      <thead><tr><th>Kapitel</th><th>Anzeigename</th><th class="rechts">Reihenfolge</th><th>Status</th></tr></thead>
+      <tbody id="tabelle-kapitelpflege"></tbody>
+    </table>
+    <p id="kapitel-meldung" class="erfolg" hidden></p>
+    <div class="knopfreihe">
+      <button class="knopf" id="knopf-kapitel-speichern">Änderungen speichern</button>
+    </div>
   </div>
 </section>
 
-<script type="module">
-import { DB } from './js/db.js?v=5';
-import { ladeKapitelliste, ladeKapitel, auswertungNachTag, haeufigsteFehler } from './js/engine.js?v=5';
+<!-- ======================= SCHÜLERDETAIL ======================= -->
+<dialog id="dialog-schueler">
+  <div class="dialog-innen">
+    <div class="dialog-kopf">
+      <h2 id="detail-name"></h2>
+      <span class="code" id="detail-code"></span>
+    </div>
+    <div class="kennzahlen" id="detail-kennzahlen" style="margin:18px 0"></div>
 
-const $ = (id) => document.getElementById(id);
-const zeige = (n) => document.querySelectorAll('.ansicht').forEach(a => a.classList.toggle('sichtbar', a.id === `ansicht-${n}`));
+    <h3>Teilkompetenzen</h3>
+    <table class="tabelle"><tbody id="detail-tags"></tbody></table>
 
-const namen = { tags: {}, fehler: {} };
-let daten = null;
+    <h3>Häufigste Denkfehler</h3>
+    <div id="detail-fehler"></div>
 
-(async () => {
-  const kapitel = await Promise.all((await ladeKapitelliste()).map(ladeKapitel));
-  for (const k of kapitel) {
-    Object.assign(namen.tags, k.tagNamen || {});
-    Object.assign(namen.fehler, k.fehlerNamen || {});
-  }
-  if (DB.nutzer()?.rolle === 'lehrer') starten();
-})();
+    <h3>Verwaltung</h3>
+    <div class="knopfreihe">
+      <button class="knopf knopf-rand knopf-klein" id="knopf-spitzname">Spitzname zurücksetzen</button>
+      <button class="knopf knopf-rand knopf-klein" id="knopf-code-neu">Neuen Code vergeben</button>
+      <button class="knopf knopf-warn knopf-klein" id="knopf-entfernen">Zugang löschen</button>
+    </div>
+    <p id="detail-meldung" class="erfolg" hidden></p>
 
-$('form-login').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  $('login-fehler').hidden = true;
-  try {
-    const nutzer = await DB.anmelden($('in-kuerzel').value, $('in-passwort').value);
-    if (nutzer.rolle !== 'lehrer') throw new Error('Dieser Zugang hat keine Lehrerrechte.');
-    starten();
-  } catch (f) {
-    $('login-fehler').textContent = f.message;
-    $('login-fehler').hidden = false;
-  }
-});
+    <div class="knopfreihe">
+      <button class="knopf" id="knopf-detail-zu">Schließen</button>
+    </div>
+  </div>
+</dialog>
 
-$('knopf-abmelden').addEventListener('click', () => { DB.abmelden(); zeige('login'); });
-$('knopf-neu').addEventListener('click', () => laden($('klasse-wahl').value));
-$('klasse-wahl').addEventListener('change', (e) => laden(e.target.value));
-
-async function starten() {
-  const klassen = await DB.klassenListe();
-  $('klasse-wahl').innerHTML = klassen.map(k => `<option>${k}</option>`).join('');
-  zeige('daten');
-  if (klassen.length) laden(klassen[0]);
-}
-
-async function laden(klasse) {
-  daten = await DB.klasseLaden(klasse);
-  const { profile, versuche } = daten;
-
-  const fehler = haeufigsteFehler(versuche, namen.fehler).slice(0, 4);
-  $('klassenfehler').innerHTML = fehler.length
-    ? fehler.map(f => `<div class="hinweiskasten"><p>${gross(f.name)}</p><small>${f.anzahl} mal in dieser Klasse</small></div>`).join('')
-    : '<p class="diagnose-leer">Noch keine Daten.</p>';
-
-  const tags = auswertungNachTag(versuche, namen.tags);
-  $('klassen-tags').innerHTML = tags.map(t =>
-    `<li class="${t.stufe}"><span class="diagnose-name">${t.name}</span>
-     <span class="diagnose-wert">${Math.round(t.quote * 100)}%</span></li>`).join('')
-    || '<li class="diagnose-leer">Noch keine Daten.</li>';
-
-  $('schuelerliste').innerHTML = profile.map(p => {
-    const eigene = versuche.filter(v => v.nutzer === p.id);
-    const richtig = eigene.filter(v => v.richtig).length;
-    const quote = eigene.length ? Math.round(richtig / eigene.length * 100) : null;
-    const schwach = auswertungNachTag(eigene, namen.tags).filter(t => t.versuche >= 3)[0];
-    const letzte = eigene[0] ? new Date(eigene[0].erstellt).toLocaleDateString('de-DE') : '–';
-    return `<tr>
-      <td><strong>${p.kuerzel}</strong></td>
-      <td>${eigene.length}</td>
-      <td class="quote ${quote === null ? '' : quote >= 80 ? 'q-stark' : quote >= 55 ? 'q-mittel' : 'q-schwach'}">${quote === null ? '–' : quote + '%'}</td>
-      <td>${letzte}</td>
-      <td>${schwach ? schwach.name : '–'}</td>
-    </tr>`;
-  }).join('');
-}
-
-const gross = (s) => s.charAt(0).toUpperCase() + s.slice(1);
-
-$('knopf-csv').addEventListener('click', () => {
-  if (!daten) return;
-  const zeilen = [['Kuerzel', 'Aufgaben', 'Richtig', 'Quote', 'SchwaechsterBereich']];
-  for (const p of daten.profile) {
-    const e = daten.versuche.filter(v => v.nutzer === p.id);
-    const r = e.filter(v => v.richtig).length;
-    const s = auswertungNachTag(e, namen.tags).filter(t => t.versuche >= 3)[0];
-    zeilen.push([p.kuerzel, e.length, r, e.length ? Math.round(r / e.length * 100) : '', s ? s.name : '']);
-  }
-  const csv = '\uFEFF' + zeilen.map(z => z.join(';')).join('\n');
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
-  a.download = `uebungsheft-${$('klasse-wahl').value}.csv`;
-  a.click();
-});
-</script>
+<script type="module" src="js/lehrer.js?v=6"></script>
 </body>
 </html>
