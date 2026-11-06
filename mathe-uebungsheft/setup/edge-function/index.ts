@@ -46,8 +46,12 @@ const DOMAIN = 'zahlenwerk.local';
 
 const cors = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, content-type',
+  // apikey und x-client-info schickt der Browser mit. Fehlen sie hier,
+  // lehnt er die Vorabanfrage ab und meldet nur "Failed to fetch".
+  'Access-Control-Allow-Headers':
+    'authorization, content-type, apikey, x-client-info, accept-profile, content-profile',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Max-Age': '86400',
 };
 
 const antwort = (daten: unknown, status = 200) =>

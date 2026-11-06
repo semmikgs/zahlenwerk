@@ -31,11 +31,30 @@ Unten rechts steht ein Feld *Function name* mit einem vorgeschlagenen Namen
 wie `swift-responder`. Diesen löschen und genau `schueler` eintragen – sonst
 findet der Lehrerbereich die Funktion nicht. Dann *Deploy function*.
 
-**4. Prüfen**
+**4. JWT-Prüfung abschalten**
+
+In den Einstellungen der Funktion gibt es einen Schalter *Verify JWT*. Der muss
+**aus** sein. Sonst blockt Supabase schon die Vorabanfrage des Browsers, und im
+Lehrerbereich erscheint nur „Failed to fetch".
+
+Das ist kein Sicherheitsverlust: Die Funktion prüft selbst, ob der Aufrufer
+angemeldet und als Lehrkraft eingetragen ist, und weist alles andere ab.
+
+**5. Prüfen**
 
 Unter *Edge Functions* muss `schueler` jetzt mit einem grünen Haken stehen.
 Die Schlüssel musst du nirgends eintragen – Supabase stellt sie der Funktion
 von selbst zur Verfügung.
+
+## Wenn „Failed to fetch" erscheint
+
+Diese Meldung kommt vom Browser, nicht von der Funktion. Sie heißt: Die Anfrage
+kam gar nicht erst durch. Drei Ursachen in der Reihenfolge ihrer Häufigkeit:
+
+1. *Verify JWT* ist noch an (siehe Schritt 4).
+2. Die Funktion heißt nicht genau `schueler`.
+3. Die Funktion ist beim Start abgestürzt – dann steht unter
+   *Edge Functions → schueler → Logs* die Ursache.
 
 ## Was die Funktion kann
 
