@@ -317,9 +317,18 @@ create policy kapitel_pflegen on zahlenwerk.kapitel for all
 -- 10) Rechte für die Schnittstelle
 -- ------------------------------------------------------------
 
-grant select, insert, update, delete on all tables    in schema zahlenwerk to authenticated;
-grant usage,  select                 on all sequences in schema zahlenwerk to authenticated;
-grant select                         on zahlenwerk.lobby, zahlenwerk.wochenbilanz to authenticated;
+-- "authenticated" sind die angemeldeten Schüler und Lehrkräfte.
+-- "service_role" ist die Edge Function. Sie umgeht zwar die Zugriffsregeln,
+-- braucht aber trotzdem die normalen Tabellenrechte.
+grant select, insert, update, delete on all tables    in schema zahlenwerk to authenticated, service_role;
+grant usage,  select                 on all sequences in schema zahlenwerk to authenticated, service_role;
+grant select                         on zahlenwerk.lobby, zahlenwerk.wochenbilanz to authenticated, service_role;
+
+-- Auch für Tabellen, die später dazukommen.
+alter default privileges in schema zahlenwerk
+  grant select, insert, update, delete on tables to authenticated, service_role;
+alter default privileges in schema zahlenwerk
+  grant usage, select on sequences to authenticated, service_role;
 
 -- Die Wochenbilanz folgt den normalen Zugriffsregeln.
 alter view zahlenwerk.wochenbilanz set (security_invoker = on);

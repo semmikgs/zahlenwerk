@@ -17,6 +17,9 @@ funktioniert nicht, weil Browser lokale Dateien nicht als Module laden.
 **1. Datenbank anlegen**
 
 `setup/supabase.sql` im SQL-Editor von Supabase einmal komplett ausführen.
+Wer eine ältere Fassung eingespielt hat, führt zusätzlich
+`setup/rechte-nachtragen.sql` aus – sonst meldet die Edge Function später
+„permission denied for table profil".
 Das legt das Schema `zahlenwerk` an – getrennt von den anderen Schultools in
 derselben Instanz.
 
