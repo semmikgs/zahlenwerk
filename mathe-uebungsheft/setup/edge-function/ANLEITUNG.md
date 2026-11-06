@@ -18,15 +18,20 @@ nur die Namensliste hin und bekommt die Codes zurück.
 
 **1. Funktion anlegen**
 
-Im Supabase-Dashboard: *Edge Functions* → *Deploy a new function* →
-*Via Editor*. Als Namen genau `schueler` eintragen.
+Im Supabase-Dashboard: *Edge Functions* → neue Funktion anlegen, im Editor.
 
 **2. Code einfügen**
 
-Den gesamten Inhalt von `index.ts` aus diesem Ordner in den Editor kopieren,
-den vorhandenen Beispielcode dabei ersetzen. Dann *Deploy*.
+Den gesamten Inhalt von `index.ts` aus diesem Ordner in den Editor kopieren und
+den vorhandenen Beispielcode dabei vollständig ersetzen.
 
-**3. Prüfen**
+**3. Namen vergeben**
+
+Unten rechts steht ein Feld *Function name* mit einem vorgeschlagenen Namen
+wie `swift-responder`. Diesen löschen und genau `schueler` eintragen – sonst
+findet der Lehrerbereich die Funktion nicht. Dann *Deploy function*.
+
+**4. Prüfen**
 
 Unter *Edge Functions* muss `schueler` jetzt mit einem grünen Haken stehen.
 Die Schlüssel musst du nirgends eintragen – Supabase stellt sie der Funktion

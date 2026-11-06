@@ -15,8 +15,28 @@
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 
 const URL = Deno.env.get('SUPABASE_URL')!;
-const SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-const ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!;
+
+/* Supabase stellt den geheimen Schlüssel je nach Projektalter unter zwei
+   Namen bereit: klassisch als SUPABASE_SERVICE_ROLE_KEY, in neueren
+   Projekten als Liste unter SUPABASE_SECRET_KEYS. Beide werden akzeptiert. */
+function geheimerSchluessel(): string {
+  const klassisch = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  if (klassisch) return klassisch;
+
+  const liste = Deno.env.get('SUPABASE_SECRET_KEYS') ?? '';
+  try {
+    const gelesen = JSON.parse(liste);
+    if (Array.isArray(gelesen) && gelesen.length) {
+      const erster = gelesen[0];
+      return typeof erster === 'string' ? erster : (erster.api_key ?? erster.key ?? '');
+    }
+  } catch {
+    // Keine JSON-Liste, dann durch Komma getrennt.
+  }
+  return liste.split(',')[0].trim();
+}
+
+const SERVICE_KEY = geheimerSchluessel();
 
 // Zeichen, die sich auf Papier nicht verwechseln lassen.
 // Kein O/0, kein I/l/1, kein S/5, kein Z/2, kein B/8.
@@ -42,8 +62,12 @@ function neuerCode(): string {
   return [...zufall].map((z) => ZEICHEN[z % ZEICHEN.length]).join('');
 }
 
-Deno.serve(async (anfrage) => {
+async function behandle(anfrage: Request): Promise<Response> {
   if (anfrage.method === 'OPTIONS') return new Response('ok', { headers: cors });
+
+  if (!SERVICE_KEY) {
+    return antwort({ fehler: 'Der geheime Schlüssel steht der Funktion nicht zur Verfügung.' }, 500);
+  }
 
   const admin = createClient(URL, SERVICE_KEY, { auth: { persistSession: false } });
 
@@ -51,11 +75,7 @@ Deno.serve(async (anfrage) => {
   const token = anfrage.headers.get('Authorization')?.replace('Bearer ', '');
   if (!token) return antwort({ fehler: 'Nicht angemeldet.' }, 401);
 
-  const alsNutzer = createClient(URL, ANON_KEY, {
-    global: { headers: { Authorization: `Bearer ${token}` } },
-    auth: { persistSession: false },
-  });
-  const { data: wer } = await alsNutzer.auth.getUser();
+  const { data: wer } = await admin.auth.getUser(token);
   if (!wer?.user) return antwort({ fehler: 'Anmeldung abgelaufen.' }, 401);
 
   const { data: profil } = await admin
@@ -156,4 +176,6 @@ Deno.serve(async (anfrage) => {
   }
 
   return antwort({ fehler: `Unbekannte Aktion: ${aktion}` }, 400);
-});
+}
+
+Deno.serve(behandle);
