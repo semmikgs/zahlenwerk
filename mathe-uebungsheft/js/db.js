@@ -98,7 +98,10 @@ const funktion = async (name, koerper) => {
     body: JSON.stringify(koerper),
   });
   const daten = await antwort.json().catch(() => ({}));
-  if (!antwort.ok) throw new Error(daten.fehler || `Fehler ${antwort.status}`);
+  if (!antwort.ok) {
+    const zusatz = daten.hinweis ? ` ${daten.hinweis}` : '';
+    throw new Error((daten.fehler || `Fehler ${antwort.status}`) + zusatz);
+  }
   return daten;
 };
 

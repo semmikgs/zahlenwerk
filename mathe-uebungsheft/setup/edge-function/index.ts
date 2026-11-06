@@ -17,26 +17,44 @@ import { createClient } from 'jsr:@supabase/supabase-js@2';
 const URL = Deno.env.get('SUPABASE_URL')!;
 
 /* Supabase stellt den geheimen Schlüssel je nach Projektalter unter zwei
-   Namen bereit: klassisch als SUPABASE_SERVICE_ROLE_KEY, in neueren
-   Projekten als Liste unter SUPABASE_SECRET_KEYS. Beide werden akzeptiert. */
-function geheimerSchluessel(): string {
+   Namen bereit: klassisch als SUPABASE_SERVICE_ROLE_KEY, in neueren Projekten
+   als Liste unter SUPABASE_SECRET_KEYS. Beide werden akzeptiert.
+
+   Wichtig ist, dass es wirklich ein geheimer Schlüssel ist. Ein versehentlich
+   eingesetzter öffentlicher Schlüssel würde den Zugriffsregeln unterliegen und
+   nichts finden – das sähe dann aus wie fehlende Lehrerrechte. */
+function schluesselKandidaten(): { quelle: string; wert: string }[] {
+  const gefunden: { quelle: string; wert: string }[] = [];
+
   const klassisch = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-  if (klassisch) return klassisch;
+  if (klassisch) gefunden.push({ quelle: 'SUPABASE_SERVICE_ROLE_KEY', wert: klassisch });
 
   const liste = Deno.env.get('SUPABASE_SECRET_KEYS') ?? '';
-  try {
-    const gelesen = JSON.parse(liste);
-    if (Array.isArray(gelesen) && gelesen.length) {
-      const erster = gelesen[0];
-      return typeof erster === 'string' ? erster : (erster.api_key ?? erster.key ?? '');
+  if (liste) {
+    let werte: string[] = [];
+    try {
+      const gelesen = JSON.parse(liste);
+      if (Array.isArray(gelesen)) {
+        werte = gelesen.map((e) =>
+          typeof e === 'string' ? e : (e?.api_key ?? e?.key ?? e?.secret ?? ''));
+      } else if (typeof gelesen === 'string') {
+        werte = [gelesen];
+      }
+    } catch {
+      werte = liste.split(',');
     }
-  } catch {
-    // Keine JSON-Liste, dann durch Komma getrennt.
+    for (const w of werte) {
+      const sauber = String(w).trim();
+      if (sauber) gefunden.push({ quelle: 'SUPABASE_SECRET_KEYS', wert: sauber });
+    }
   }
-  return liste.split(',')[0].trim();
+
+  // Ein öffentlicher Schlüssel taugt hier nicht und würde nur Verwirrung stiften.
+  return gefunden.filter((k) => !k.wert.startsWith('sb_publishable_'));
 }
 
-const SERVICE_KEY = geheimerSchluessel();
+const KANDIDATEN = schluesselKandidaten();
+const SERVICE_KEY = KANDIDATEN[0]?.wert ?? '';
 
 // Zeichen, die sich auf Papier nicht verwechseln lassen.
 // Kein O/0, kein I/l/1, kein S/5, kein Z/2, kein B/8.
@@ -70,7 +88,11 @@ async function behandle(anfrage: Request): Promise<Response> {
   if (anfrage.method === 'OPTIONS') return new Response('ok', { headers: cors });
 
   if (!SERVICE_KEY) {
-    return antwort({ fehler: 'Der geheime Schlüssel steht der Funktion nicht zur Verfügung.' }, 500);
+    return antwort({
+      fehler: 'Der Funktion steht kein geheimer Schlüssel zur Verfügung. '
+            + 'Prüfe unter Edge Functions → Secrets, ob SUPABASE_SERVICE_ROLE_KEY '
+            + 'oder SUPABASE_SECRET_KEYS gesetzt ist.',
+    }, 500);
   }
 
   const admin = createClient(URL, SERVICE_KEY, { auth: { persistSession: false } });
@@ -79,15 +101,39 @@ async function behandle(anfrage: Request): Promise<Response> {
   const token = anfrage.headers.get('Authorization')?.replace('Bearer ', '');
   if (!token) return antwort({ fehler: 'Nicht angemeldet.' }, 401);
 
-  const { data: wer } = await admin.auth.getUser(token);
-  if (!wer?.user) return antwort({ fehler: 'Anmeldung abgelaufen.' }, 401);
+  const { data: wer, error: werFehler } = await admin.auth.getUser(token);
+  if (werFehler || !wer?.user) {
+    return antwort({
+      fehler: `Die Anmeldung konnte nicht geprüft werden: ${werFehler?.message ?? 'kein Nutzer zum Token'}`,
+    }, 401);
+  }
 
-  const { data: profil } = await admin
+  const { data: profil, error: profilFehler } = await admin
     .schema('zahlenwerk').from('profil')
-    .select('rolle').eq('id', wer.user.id).maybeSingle();
+    .select('rolle, klasse').eq('id', wer.user.id).maybeSingle();
 
-  if (profil?.rolle !== 'lehrer') {
-    return antwort({ fehler: 'Dieser Zugang hat keine Lehrerrechte.' }, 403);
+  // Hier trennen sich drei Fälle, die vorher alle gleich aussahen.
+  if (profilFehler) {
+    return antwort({
+      fehler: `Das Profil ließ sich nicht lesen: ${profilFehler.message}`,
+      hinweis: 'Deutet auf einen Schlüssel ohne volle Rechte oder ein nicht freigegebenes Schema hin.',
+      schluesselQuelle: KANDIDATEN[0]?.quelle ?? 'unbekannt',
+    }, 500);
+  }
+
+  if (!profil) {
+    return antwort({
+      fehler: 'Zu diesem Konto ist in zahlenwerk.profil kein Eintrag hinterlegt.',
+      nutzer: wer.user.id,
+      hinweis: 'Trage das Konto per SQL als Lehrkraft ein.',
+    }, 403);
+  }
+
+  if (profil.rolle !== 'lehrer') {
+    return antwort({
+      fehler: `Dieser Zugang ist als "${profil.rolle}" eingetragen, nicht als Lehrkraft.`,
+      nutzer: wer.user.id,
+    }, 403);
   }
 
   let koerper: Record<string, unknown>;
