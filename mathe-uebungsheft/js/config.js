@@ -11,7 +11,7 @@
 
 export const CONFIG = {
   supabaseUrl: 'https://xzhxqbyobdlyqkyyjcxc.supabase.co',
-  supabaseKey: 'HIER_SUPABASE_ANON_KEY',
+  supabaseKey: 'sb_publishable_TlasNLd2Yxq8nxrkgHMnlA_J5-IezYg',
 
   // Eigenes Schema, damit sich die Schultools in derselben Datenbank
   // nicht ins Gehege kommen. Muss unter Settings → API → Exposed schemas
