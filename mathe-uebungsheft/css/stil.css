@@ -1,278 +1,598 @@
-/* Mathe-Übungsheft – Optik: Schulheft, Füllertinte, Korrekturrot.
-   Keine Webfonts (Datenschutz), alles läuft offline aus dem Repo. */
+/* ============================================================
+   Zahlenwerk – Schüler-App
+   Gedacht fürs Handy, gebaut ohne Webfonts und ohne fremde Server.
+
+   Leitgedanke: ein Nachthimmel, den man sich vollspielt. Die Woche ist
+   ein Sternbild, das sich füllt. Gold gehört ausschließlich der
+   Belohnung – kein Knopf, kein Rahmen, keine Überschrift ist golden.
+   Dann heißt Gold auf jedem Bildschirm dasselbe: das hast du verdient.
+   ============================================================ */
 
 :root{
-  --papier:#FBFAF7;
-  --karo:#D9E2EF;
-  --tinte:#1C3F7C;
-  --tinte-tief:#122B57;
-  --rot:#B5372B;
-  --gruen:#2C6E52;
-  --grau:#5A6472;
-  --gelb-stern:#C9941B;
-  --linie:#E4E2DC;
+  /* Flächen, von hinten nach vorn */
+  --tiefe:#090E24;
+  --raum:#141B3C;
+  --karte:#1D2650;
+  --karte-hoch:#273264;
+  --kante:#313C75;
+
+  /* Bedeutungsfarben */
+  --stern:#FFC247;
+  --stern-hell:#FFE7B0;
+  --puls:#7B6CFF;
+  --puls-tief:#5A48E0;
+  --ja:#35D6A0;
+  --nein:#FF6F7D;
+
+  /* Schrift */
+  --licht:#EEF1FF;
+  --daemmer:#98A1D4;
+  --nebel:#6C76A8;
 
   --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --rechen: ui-rounded, "SF Pro Rounded", "Segoe UI", Verdana, sans-serif;
+  --rund: ui-rounded, "SF Pro Rounded", "Segoe UI Variable Display", "Segoe UI", Verdana, sans-serif;
 
-  --rand: 20px;
-  --tipp: 56px; /* Mindesthöhe für Finger */
+  --rand:20px;
+  --tipp:56px;          /* Mindesthöhe für Finger */
+  --radius:18px;
 }
 
+/* Muss vor allen display-Regeln stehen, sonst gewinnen Klassen über hidden. */
+[hidden]{display:none !important}
+
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;padding:0}
+html,body{margin:0;padding:0;min-height:100%}
+
 body{
-  background:var(--papier);
-  color:#1A1D23;
+  background:var(--tiefe);
+  color:var(--licht);
   font:400 17px/1.55 var(--sans);
   font-variant-numeric:tabular-nums;
   padding-bottom:env(safe-area-inset-bottom);
   overscroll-behavior-y:none;
+  -webkit-font-smoothing:antialiased;
 }
 
-/* Muss vor allen display-Regeln stehen: sonst überschreiben Klassen wie
-   .knopf{display:block} das hidden-Attribut, und Elemente bleiben sichtbar. */
-[hidden]{display:none !important}
+/* Sternenfeld im Hintergrund – drei Ebenen aus reinen Farbverläufen,
+   kein Bild, keine Anfrage nach außen. */
+body::before{
+  content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;
+  background:
+    radial-gradient(1.4px 1.4px at 12% 18%, rgba(255,255,255,.65), transparent),
+    radial-gradient(1.2px 1.2px at 68% 9%,  rgba(255,255,255,.45), transparent),
+    radial-gradient(1.6px 1.6px at 83% 34%, rgba(255,255,255,.55), transparent),
+    radial-gradient(1.1px 1.1px at 28% 46%, rgba(255,255,255,.35), transparent),
+    radial-gradient(1.5px 1.5px at 55% 62%, rgba(255,255,255,.5),  transparent),
+    radial-gradient(1.2px 1.2px at 8%  74%, rgba(255,255,255,.4),  transparent),
+    radial-gradient(1.7px 1.7px at 91% 81%, rgba(255,255,255,.45), transparent),
+    radial-gradient(1.1px 1.1px at 40% 92%, rgba(255,255,255,.3),  transparent);
+}
+body::after{
+  content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:
+    radial-gradient(90% 55% at 50% -10%, rgba(123,108,255,.28), transparent 70%),
+    radial-gradient(70% 45% at 92% 108%, rgba(255,194,71,.08), transparent 70%);
+}
 
 .ansicht{display:none}
-.ansicht.sichtbar{display:block}
+.ansicht.sichtbar{display:block;animation:auftauchen .22s ease-out}
+@keyframes auftauchen{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){
+  .ansicht.sichtbar{animation:none}
+}
 
-.heft{max-width:480px;margin:0 auto;padding:var(--rand) var(--rand) 48px}
-.heft-mitte{text-align:center;padding-top:56px}
-.heft-uebung{padding-bottom:180px}
+.bahn{max-width:480px;margin:0 auto;padding:var(--rand) var(--rand) 56px}
+.bahn-mitte{text-align:center;padding-top:40px}
+.bahn-uebung{padding-bottom:210px}
 
-/* --- Kopf --- */
+/* ---------------- Kopfzeile ---------------- */
+
 .kopf{
   display:flex;align-items:center;justify-content:space-between;gap:12px;
-  max-width:480px;margin:0 auto;padding:16px var(--rand) 0;
+  max-width:480px;margin:0 auto;padding:18px var(--rand) 0;
 }
-.kopf-gruss{margin:0;font-weight:600;font-size:19px;color:var(--tinte-tief)}
-.kopf-datum{margin:2px 0 0;font-size:14px;color:var(--grau)}
-.kopf-uebung{padding-top:14px}
+.kopf-gruss{margin:0;font:700 21px/1.2 var(--sans);letter-spacing:-.02em}
+.kopf-datum{margin:3px 0 0;font-size:14px;color:var(--nebel)}
 
-/* --- Anmeldung --- */
+/* ---------------- Anmeldung ---------------- */
+
 .marke{
-  margin:56px 0 4px;font-size:34px;line-height:1.1;font-weight:700;
-  color:var(--tinte-tief);letter-spacing:-.02em;
+  margin:76px 0 2px;font:800 42px/1 var(--sans);
+  letter-spacing:-.035em;
+  background:linear-gradient(104deg, var(--licht) 30%, var(--stern-hell));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
 }
 .marke-klasse{
-  display:block;font-size:17px;font-weight:500;color:var(--grau);
-  letter-spacing:0;margin-top:6px;
+  display:block;margin-top:10px;
+  font:500 16px/1.4 var(--sans);letter-spacing:0;color:var(--daemmer);
+  -webkit-text-fill-color:var(--daemmer);
 }
-.lead{color:var(--grau);margin:0 0 28px}
-.feld{display:block;margin-bottom:16px}
-.feld span{display:block;font-size:14px;font-weight:600;color:var(--grau);margin-bottom:6px}
-.feld input{
-  width:100%;min-height:var(--tipp);padding:0 16px;
-  font:400 18px var(--sans);color:#1A1D23;
-  background:#fff;border:1.5px solid var(--linie);border-radius:12px;
-}
-.feld input:focus-visible,#in-antwort:focus-visible{outline:3px solid var(--tinte);outline-offset:2px;border-color:var(--tinte)}
-.fussnote{margin-top:24px;font-size:14px;color:var(--grau)}
-.fehlermeldung{color:var(--rot);font-size:15px;margin:0 0 12px}
+.lead{color:var(--daemmer);margin:22px 0 28px;font-size:16px}
 
-/* --- Knöpfe --- */
+.feld{display:block;margin-bottom:16px}
+.feld > span{
+  display:block;font-size:13px;font-weight:600;color:var(--nebel);
+  margin-bottom:7px;
+}
+.feld input{
+  width:100%;min-height:var(--tipp);padding:0 18px;
+  font:500 18px var(--sans);color:var(--licht);
+  background:var(--karte);border:1.5px solid var(--kante);
+  border-radius:14px;
+}
+.feld input::placeholder{color:var(--nebel)}
+.feld input:focus-visible,#in-antwort:focus-visible{
+  outline:3px solid var(--puls);outline-offset:2px;border-color:var(--puls);
+}
+
+.codefeld{
+  text-align:center;letter-spacing:.24em;text-transform:uppercase;
+  font:700 25px/1 var(--rund) !important;
+}
+.codefeld::placeholder{letter-spacing:.2em;font-weight:400}
+
+.trenner{
+  display:flex;align-items:center;gap:14px;
+  margin:26px 0;color:var(--nebel);font-size:14px;
+}
+.trenner::before,.trenner::after{content:"";flex:1;height:1px;background:var(--kante)}
+
+.fussnote{margin-top:20px;font-size:13.5px;line-height:1.5;color:var(--nebel)}
+.fehlermeldung{color:var(--nein);font-size:15px;margin:0 0 14px}
+
+/* ---------------- Knöpfe ---------------- */
+
 .knopf{
   display:block;width:100%;min-height:var(--tipp);
-  font:600 18px var(--sans);border:none;border-radius:14px;cursor:pointer;
+  font:700 18px var(--sans);letter-spacing:-.01em;
+  border:none;border-radius:16px;cursor:pointer;
+  transition:transform .09s ease, box-shadow .09s ease, filter .15s ease;
 }
-.knopf-haupt{background:var(--tinte);color:#fff;box-shadow:0 2px 0 var(--tinte-tief)}
-.knopf-haupt:active{transform:translateY(2px);box-shadow:none}
-.knopf-haupt[disabled]{background:#A9B3C4;box-shadow:none}
-.knopf-klein{
-  min-height:40px;padding:0 14px;font:600 15px var(--sans);
-  background:transparent;color:var(--tinte);border:1.5px solid var(--karo);
-  border-radius:10px;cursor:pointer;flex:0 0 auto;
+.knopf-haupt{
+  background:linear-gradient(180deg, var(--puls), var(--puls-tief));
+  color:#fff;
+  box-shadow:0 4px 0 #3F2FBF, 0 8px 22px rgba(90,72,224,.42);
+}
+.knopf-haupt:active{transform:translateY(4px);box-shadow:0 0 0 #3F2FBF}
+.knopf-haupt[disabled]{
+  background:var(--karte-hoch);color:var(--nebel);box-shadow:none;cursor:default;
 }
 .knopf-zweit{
-  background:#fff;color:var(--tinte);border:1.5px solid var(--tinte);
-  box-shadow:0 2px 0 var(--karo);
+  background:transparent;color:var(--licht);
+  border:1.5px solid var(--kante);box-shadow:none;
 }
-.knopf-zweit:active{transform:translateY(2px);box-shadow:none}
+.knopf-zweit:active{transform:translateY(2px);background:var(--karte)}
+
+.knopf-klein{
+  min-height:40px;padding:0 15px;flex:0 0 auto;cursor:pointer;
+  font:600 14px var(--sans);color:var(--daemmer);
+  background:rgba(255,255,255,.05);border:1.5px solid var(--kante);
+  border-radius:11px;
+}
 .knopf-text{
-  display:block;width:100%;margin-top:20px;padding:12px;
-  background:none;border:none;color:var(--tinte);font:500 16px var(--sans);
-  text-decoration:underline;text-underline-offset:3px;cursor:pointer;
+  display:block;width:100%;margin-top:22px;padding:13px;
+  background:none;border:none;color:var(--daemmer);
+  font:500 15.5px var(--sans);cursor:pointer;
+  text-decoration:underline;text-underline-offset:4px;
+  text-decoration-color:var(--kante);
 }
 
-/* --- Zahlenstreifen --- */
-.streifen{display:flex;gap:10px;margin-bottom:22px}
+/* ---------------- Sternenkette der Woche ---------------- */
+
+.kette{
+  position:relative;margin-bottom:22px;padding:18px 18px 16px;
+  background:linear-gradient(165deg, var(--karte), var(--raum));
+  border:1.5px solid var(--kante);border-radius:var(--radius);
+}
+.kette-reihe{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:4px;margin-bottom:12px;
+}
+/* Die Verbindungslinie macht aus einzelnen Punkten ein Sternbild. */
+.kette-reihe::before{
+  content:"";position:absolute;left:30px;right:30px;top:36px;height:1.5px;
+  background:repeating-linear-gradient(90deg, var(--kante) 0 6px, transparent 6px 11px);
+  z-index:0;
+}
+.kette-stern{
+  position:relative;z-index:1;width:28px;height:28px;flex:0 0 auto;
+  display:grid;place-items:center;font-size:19px;line-height:1;
+  color:var(--kante);
+}
+.kette-stern.voll{
+  color:var(--stern);
+  filter:drop-shadow(0 0 7px rgba(255,194,71,.6));
+}
+.kette-stern.heute{outline:2px dashed var(--puls);outline-offset:3px;border-radius:50%}
+.kette-text{margin:0;font-size:14px;color:var(--daemmer);text-align:center}
+.kette-text b{color:var(--stern);font-weight:700}
+
+/* ---------------- Zahlenstreifen ---------------- */
+
+.streifen{display:flex;gap:9px;margin-bottom:22px}
 .streifen-wert{
-  flex:1;text-align:center;padding:12px 6px;
-  background:#fff;border:1.5px solid var(--linie);border-radius:12px;
+  flex:1;text-align:center;padding:13px 6px;
+  background:var(--karte);border:1.5px solid var(--kante);border-radius:14px;
 }
-.streifen-wert strong{display:block;font-size:24px;color:var(--tinte-tief);line-height:1.1}
-.streifen-wert span{display:block;font-size:12px;color:var(--grau);margin-top:3px}
+.streifen-wert strong{display:block;font:700 23px/1.1 var(--rund);color:var(--licht)}
+.streifen-wert span{display:block;font-size:11.5px;color:var(--nebel);margin-top:4px}
 
-/* --- Tageskarte --- */
+/* ---------------- Tageskarte: der Held der Startseite ---------------- */
+
 .tageskarte{
-  background:var(--tinte);color:#fff;border-radius:18px;padding:22px 20px;margin-bottom:32px;
+  position:relative;overflow:hidden;
+  padding:24px 22px;margin-bottom:14px;border-radius:24px;
+  background:
+    radial-gradient(120% 90% at 85% 0%, rgba(255,194,71,.16), transparent 58%),
+    linear-gradient(158deg, #2A3272, #171F47);
+  border:1.5px solid var(--kante);
+  box-shadow:0 14px 34px rgba(5,9,28,.6);
 }
-.tageskarte-oben{margin:0;font-size:14px;color:#B9CBE8}
-.tageskarte-titel{margin:4px 0 16px;font-size:23px;font-weight:700;line-height:1.25}
-.tageskarte-info{margin:10px 0 18px;font-size:14px;color:#B9CBE8}
-.tageskarte .knopf-haupt{background:#fff;color:var(--tinte-tief);box-shadow:0 2px 0 #C7D5EA}
+.tageskarte-oben{
+  margin:0;font-size:12.5px;font-weight:600;color:var(--stern);
+  letter-spacing:.02em;
+}
+.tageskarte-titel{
+  margin:7px 0 18px;font:800 25px/1.2 var(--sans);letter-spacing:-.025em;
+}
+.tageskarte-info{margin:12px 0 20px;font-size:14px;color:var(--daemmer)}
+.tageskarte .knopf-haupt{
+  background:linear-gradient(180deg, #FFFFFF, #E4E7FA);color:#1B2047;
+  box-shadow:0 4px 0 #AEB4D8;
+}
+.tageskarte .knopf-haupt:active{box-shadow:0 0 0 #AEB4D8}
 
-.balken{height:8px;background:rgba(255,255,255,.28);border-radius:99px;overflow:hidden}
-.balken i{display:block;height:100%;background:#fff;border-radius:99px;transition:width .35s ease}
-.balken-schmal{flex:1;height:8px;background:var(--karo)}
-.balken-schmal i{background:var(--tinte)}
-.zaehler{font-size:15px;font-weight:600;color:var(--grau);flex:0 0 auto;min-width:42px;text-align:right}
+/* ---------------- Fortschrittsbalken ---------------- */
 
-/* --- Kapitel --- */
-.ueberschrift{font-size:15px;font-weight:700;color:var(--grau);margin:0 0 6px}
-.abschnitt-info{margin:0 0 14px;font-size:14px;color:var(--grau)}
-.kapitelliste{list-style:none;margin:0 0 32px;padding:0}
-.kapitelliste li{margin-bottom:10px}
+.balken{height:9px;background:rgba(0,0,0,.3);border-radius:99px;overflow:hidden}
+.balken i{
+  display:block;height:100%;border-radius:99px;
+  background:linear-gradient(90deg, var(--stern), var(--stern-hell));
+  transition:width .45s cubic-bezier(.22,1,.36,1);
+}
+.balken-schmal{flex:1;height:7px;background:var(--karte-hoch)}
+.balken-schmal i{background:linear-gradient(90deg, var(--puls), #A99BFF)}
+.zaehler{
+  font:700 15px var(--rund);color:var(--daemmer);
+  flex:0 0 auto;min-width:46px;text-align:right;
+}
+
+/* ---------------- Wochenaufgabe ---------------- */
+
+.wochenkarte{
+  display:flex;align-items:center;gap:14px;width:100%;
+  padding:16px 18px;margin-bottom:26px;text-align:left;cursor:pointer;
+  background:linear-gradient(140deg, rgba(255,194,71,.12), rgba(29,38,80,.9));
+  border:1.5px solid rgba(255,194,71,.42);border-radius:var(--radius);
+  font:inherit;color:inherit;
+}
+.wochenkarte:active{transform:translateY(2px)}
+.wochenkarte-text{flex:1;min-width:0}
+.wochenkarte strong{display:block;font-size:16.5px;font-weight:700}
+.wochenkarte small{display:block;font-size:13px;color:var(--daemmer);margin-top:2px}
+.wochenkarte .komet{font-size:27px;line-height:1;flex:0 0 auto;
+  filter:drop-shadow(0 0 9px rgba(255,194,71,.55))}
+.wochenkarte.erledigt{border-color:rgba(53,214,160,.45)}
+.wochenkarte.erledigt .komet{filter:drop-shadow(0 0 9px rgba(53,214,160,.55))}
+
+/* ---------------- Rangliste ---------------- */
+
+.ueberschrift{
+  font-size:13px;font-weight:700;color:var(--nebel);
+  letter-spacing:.04em;margin:0 0 6px;
+}
+.abschnitt-info{margin:0 0 14px;font-size:13.5px;color:var(--nebel)}
+
+.rangliste{list-style:none;margin:0 0 28px;padding:0}
+.rangliste li{
+  display:flex;align-items:center;gap:13px;
+  padding:11px 14px;margin-bottom:7px;
+  background:var(--karte);border:1.5px solid transparent;border-radius:13px;
+}
+.rangliste li.ich{
+  border-color:var(--puls);
+  background:linear-gradient(100deg, rgba(123,108,255,.22), var(--karte));
+}
+.rang-platz{
+  flex:0 0 24px;text-align:center;
+  font:700 15px var(--rund);color:var(--nebel);
+}
+.rangliste li:nth-child(1) .rang-platz{color:var(--stern)}
+.rang-name{flex:1;min-width:0;font-weight:600;font-size:16px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rang-sterne{
+  flex:0 0 auto;font:700 15px var(--rund);color:var(--stern);
+  display:flex;align-items:center;gap:4px;
+}
+.rangliste-leer{
+  color:var(--nebel);font-size:14.5px;padding:14px;
+  background:var(--karte);border-radius:13px;
+}
+
+/* ---------------- Kapitel ---------------- */
+
+.kapitelliste{list-style:none;margin:0 0 28px;padding:0}
+.kapitelliste li{margin-bottom:9px}
 .kapitelliste button{
   width:100%;min-height:var(--tipp);display:flex;align-items:center;gap:14px;
-  padding:12px 16px;text-align:left;cursor:pointer;
-  background:#fff;border:1.5px solid var(--linie);border-radius:14px;font:inherit;
+  padding:13px 16px;text-align:left;cursor:pointer;font:inherit;color:inherit;
+  background:var(--karte);border:1.5px solid var(--kante);border-radius:15px;
+  transition:transform .09s ease;
 }
-.kapitelliste strong{display:block;font-size:17px;color:var(--tinte-tief)}
-.kapitelliste small{display:block;font-size:13px;color:var(--grau)}
+.kapitelliste button:active{transform:translateY(2px)}
+.kapitelliste strong{display:block;font-size:16.5px;font-weight:650}
+.kapitelliste small{display:block;font-size:12.5px;color:var(--nebel);margin-top:2px}
+.kapitelliste .archiv{opacity:.62}
 .ring{flex:0 0 auto;width:38px;height:38px}
 
-/* --- Diagnose --- */
-.diagnose{list-style:none;margin:0 0 24px;padding:0}
+/* ---------------- Diagnose ---------------- */
+
+.diagnose{list-style:none;margin:0 0 26px;padding:0}
 .diagnose li{
-  display:flex;align-items:baseline;gap:10px;padding:11px 0;
-  border-bottom:1px solid var(--linie);font-size:16px;
+  display:flex;align-items:center;gap:12px;padding:12px 0;
+  border-bottom:1px solid var(--kante);font-size:15.5px;
 }
 .diagnose li:last-child{border-bottom:none}
 .diagnose-name{flex:1}
-.diagnose-wert{font-weight:700;font-variant-numeric:tabular-nums}
-.stark .diagnose-wert{color:var(--gruen)}
-.mittel .diagnose-wert{color:#9A6B12}
-.schwach .diagnose-wert{color:var(--rot)}
-.diagnose-leer{color:var(--grau);font-size:15px;border:none}
+.diagnose-wert{font:700 15px var(--rund)}
+.stark .diagnose-wert{color:var(--ja)}
+.mittel .diagnose-wert{color:var(--daemmer)}
+.schwach .diagnose-wert{color:var(--nein)}
+.diagnose-leer{color:var(--nebel);font-size:14.5px;border:none}
 
-/* --- Aufgabe --- */
-.aufgabe-thema{margin:8px 0 12px;font-size:14px;font-weight:600;color:var(--grau)}
-.karo{
-  background-color:#fff;
-  background-image:linear-gradient(var(--karo) 1px, transparent 1px),
-                   linear-gradient(90deg, var(--karo) 1px, transparent 1px);
-  background-size:22px 22px;
-  border:1.5px solid var(--linie);border-radius:14px;
-  padding:32px 18px;margin-bottom:24px;
-}
-.aufgabe-text{
-  margin:0;text-align:center;
-  font:600 32px/1.35 var(--rechen);
-  color:var(--tinte-tief);letter-spacing:.01em;
-  word-break:break-word;
-}
-.aufgabe-text .frage-satz{display:block;font:500 18px/1.45 var(--sans);color:#1A1D23;margin-bottom:14px}
-
-.antworten{display:grid;gap:10px}
-.antwort{
-  min-height:var(--tipp);padding:12px 18px;
-  background:#fff;border:1.5px solid var(--linie);border-radius:14px;
-  font:600 21px var(--rechen);color:var(--tinte-tief);text-align:center;cursor:pointer;
-}
-.antwort:active{background:#F1F5FB}
-.antwort.gewaehlt{border-color:var(--tinte);border-width:2.5px;background:#EEF3FA}
-.antwort.richtig{border-color:var(--gruen);background:#EDF6F1;color:var(--gruen)}
-.antwort.falsch{border-color:var(--rot);background:#FBEFEE;color:var(--rot)}
-.antwort[disabled]{cursor:default}
-
-.knopf-pruefen{margin-top:16px}
-.eingabe{display:grid;gap:10px}
-#in-antwort{
-  width:100%;min-height:var(--tipp);padding:0 16px;text-align:center;
-  font:600 24px var(--rechen);color:var(--tinte-tief);
-  background:#fff;border:1.5px solid var(--linie);border-radius:14px;
-}
-
-/* --- Rückmeldung --- */
-.rueckmeldung{
-  position:fixed;left:0;right:0;bottom:0;z-index:5;
-  padding:20px var(--rand) calc(20px + env(safe-area-inset-bottom));
-  background:#fff;border-top:2px solid var(--linie);
-  border-radius:20px 20px 0 0;
-}
-.rueckmeldung > *{max-width:480px;margin-left:auto;margin-right:auto}
-.rueckmeldung-titel{margin:0 0 4px;font-size:19px;font-weight:700}
-.rueckmeldung-text{margin:0 0 16px;font-size:16px;color:var(--grau)}
-.rueckmeldung.ja .rueckmeldung-titel{color:var(--gruen)}
-.rueckmeldung.nein .rueckmeldung-titel{color:var(--rot)}
-@media (prefers-reduced-motion: no-preference){
-  .rueckmeldung{animation:hoch .18s ease-out}
-  @keyframes hoch{from{transform:translateY(100%)}to{transform:translateY(0)}}
-}
-
-/* --- Abschluss --- */
-.siegel{
-  width:82px;height:82px;margin:0 auto 20px;
-  display:grid;place-items:center;border-radius:50%;
-  background:var(--gruen);color:#fff;font-size:40px;line-height:1;
-}
-.fertig-titel{margin:0 0 8px;font-size:27px;color:var(--tinte-tief)}
-.fertig-text{margin:0 0 28px;color:var(--grau)}
-#ansicht-fertig .diagnose{text-align:left;margin-bottom:28px}
-
-/* --- Dialog --- */
-dialog{
-  border:none;border-radius:18px 18px 0 0;padding:0;width:100%;max-width:480px;
-  margin:auto auto 0;background:var(--papier);
-}
-dialog::backdrop{background:rgba(18,43,87,.42)}
-.dialog-inhalt{padding:24px var(--rand) calc(24px + env(safe-area-inset-bottom))}
-.dialog-inhalt h3{margin:0 0 12px;font-size:21px;color:var(--tinte-tief)}
-.grundlage-text{font-size:17px;margin-bottom:22px}
-.grundlage-text p{margin:0 0 12px}
-.grundlage-text .merksatz{
-  background:#fff;border-left:4px solid var(--tinte);border-radius:0 10px 10px 0;
-  padding:12px 14px;font-weight:600;color:var(--tinte-tief);
-}
-.grundlage-text .rechnung{
-  font:600 20px/1.6 var(--rechen);color:var(--tinte-tief);
-  background:#fff;border:1.5px solid var(--linie);border-radius:10px;
-  padding:12px 14px;text-align:center;
-}
-
-/* --- Lehreransicht --- */
-.tabelle{width:100%;border-collapse:collapse;font-size:15px}
-.tabelle th{text-align:left;font-size:13px;color:var(--grau);padding:8px 6px;border-bottom:1.5px solid var(--linie)}
-.tabelle td{padding:10px 6px;border-bottom:1px solid var(--linie)}
-.quote{font-weight:700;font-variant-numeric:tabular-nums}
-.q-stark{color:var(--gruen)} .q-mittel{color:#9A6B12} .q-schwach{color:var(--rot)}
-.hinweiskasten{
-  background:#fff;border:1.5px solid var(--linie);border-left:4px solid var(--rot);
-  border-radius:0 12px 12px 0;padding:14px 16px;margin-bottom:12px;
-}
-.hinweiskasten p{margin:0;font-size:16px}
-.hinweiskasten small{color:var(--grau)}
-
-/* --- Einstellungen --- */
-.einstellung{
-  display:flex;align-items:center;gap:12px;
-  min-height:var(--tipp);padding:12px 16px;margin-bottom:12px;
-  background:#fff;border:1.5px solid var(--linie);border-radius:14px;
-  font-size:16px;cursor:pointer;
-}
-.einstellung input{width:24px;height:24px;accent-color:var(--tinte);flex:0 0 auto}
-.version{font-size:13px;color:var(--grau);text-align:center;margin:0}
-
-/* --- Trenner und Gasthinweis --- */
-.trenner{
-  display:flex;align-items:center;gap:12px;
-  margin:22px 0;color:var(--grau);font-size:14px;
-}
-.trenner::before,.trenner::after{content:"";flex:1;height:1px;background:var(--linie)}
+/* ---------------- Gastband und Einstellung ---------------- */
 
 .gastband{
   display:flex;align-items:center;gap:12px;flex-wrap:wrap;
   padding:14px 16px;margin-bottom:20px;
-  background:#fff;border:1.5px solid var(--linie);border-left:4px solid var(--tinte);
-  border-radius:0 12px 12px 0;
+  background:var(--karte);border:1.5px solid var(--kante);
+  border-left:3px solid var(--puls);border-radius:0 14px 14px 0;
 }
-.gastband p{margin:0;flex:1;min-width:180px;font-size:15px;color:var(--grau)}
+.gastband p{margin:0;flex:1;min-width:170px;font-size:14px;color:var(--daemmer)}
 
-/* --- Codeeingabe --- */
-.codefeld{
-  text-align:center;letter-spacing:.22em;text-transform:uppercase;
-  font:700 24px/1 var(--rechen);
+.einstellung{
+  display:flex;align-items:center;gap:13px;
+  min-height:var(--tipp);padding:13px 16px;margin-bottom:26px;
+  background:var(--karte);border:1.5px solid var(--kante);border-radius:14px;
+  font-size:15.5px;cursor:pointer;
 }
-.codefeld::placeholder{letter-spacing:.18em;font-weight:400;color:#AFB7C4}
+.einstellung input{width:22px;height:22px;accent-color:var(--puls);flex:0 0 auto}
+
+.version{font-size:12px;color:var(--nebel);text-align:center;margin:30px 0 0}
+
+/* ---------------- Aufgabe ---------------- */
+
+.aufgabe-thema{
+  margin:10px 0 14px;font-size:13px;font-weight:600;color:var(--nebel);
+}
+
+.tafel{
+  position:relative;overflow:hidden;
+  background:linear-gradient(165deg, var(--karte), #151C3E);
+  border:1.5px solid var(--kante);border-radius:22px;
+  padding:38px 20px;margin-bottom:22px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07), 0 10px 26px rgba(5,9,28,.5);
+}
+.aufgabe-text{
+  position:relative;margin:0;text-align:center;
+  font:700 34px/1.3 var(--rund);letter-spacing:.01em;
+  word-break:break-word;
+}
+.aufgabe-text .frage-satz{
+  display:block;margin-bottom:16px;
+  font:500 17px/1.45 var(--sans);color:var(--daemmer);letter-spacing:0;
+}
+
+/* Aufleuchten der Tafel bei richtiger Antwort */
+.tafel.treffer{animation:tafelLeuchten .7s ease-out}
+@keyframes tafelLeuchten{
+  0%  {box-shadow:inset 0 1px 0 rgba(255,255,255,.07), 0 10px 26px rgba(5,9,28,.5)}
+  28% {box-shadow:inset 0 0 0 2px var(--ja), 0 0 42px rgba(53,214,160,.55)}
+  100%{box-shadow:inset 0 1px 0 rgba(255,255,255,.07), 0 10px 26px rgba(5,9,28,.5)}
+}
+
+/* ---------------- Antworten ---------------- */
+
+.antworten{display:grid;gap:10px}
+.antwort{
+  position:relative;min-height:var(--tipp);padding:13px 18px;
+  background:linear-gradient(180deg, var(--karte-hoch), var(--karte));
+  border:1.5px solid var(--kante);border-radius:15px;
+  font:700 22px var(--rund);color:var(--licht);text-align:center;cursor:pointer;
+  box-shadow:0 3px 0 #141A3C;
+  transition:transform .08s ease, box-shadow .08s ease, border-color .12s ease;
+}
+.antwort:active{transform:translateY(3px);box-shadow:0 0 0 #141A3C}
+.antwort.gewaehlt{
+  border-color:var(--puls);
+  box-shadow:0 3px 0 #141A3C, 0 0 0 3px rgba(123,108,255,.28);
+}
+.antwort.richtig{
+  border-color:var(--ja);color:var(--ja);
+  background:linear-gradient(180deg, rgba(53,214,160,.2), rgba(53,214,160,.08));
+  box-shadow:0 3px 0 #0E3A2C, 0 0 26px rgba(53,214,160,.34);
+}
+.antwort.falsch{
+  border-color:var(--nein);color:var(--nein);
+  background:linear-gradient(180deg, rgba(255,111,125,.18), rgba(255,111,125,.06));
+  box-shadow:0 3px 0 #4A1B22;
+  animation:wackeln .32s ease;
+}
+@keyframes wackeln{
+  0%,100%{transform:translateX(0)}
+  22%{transform:translateX(-6px)}
+  58%{transform:translateX(5px)}
+  82%{transform:translateX(-2px)}
+}
+.antwort[disabled]{cursor:default}
+
+.knopf-pruefen{margin-top:18px}
+.eingabe{display:grid;gap:11px}
+#in-antwort{
+  width:100%;min-height:var(--tipp);padding:0 18px;text-align:center;
+  font:700 25px var(--rund);color:var(--licht);
+  background:var(--karte);border:1.5px solid var(--kante);border-radius:15px;
+}
+
+/* ---------------- Rückmeldung ---------------- */
+
+.rueckmeldung{
+  position:fixed;left:0;right:0;bottom:0;z-index:6;
+  padding:20px var(--rand) calc(20px + env(safe-area-inset-bottom));
+  background:var(--raum);
+  border-top:1.5px solid var(--kante);
+  border-radius:24px 24px 0 0;
+  box-shadow:0 -14px 40px rgba(5,9,28,.66);
+}
+.rueckmeldung > *{max-width:480px;margin-left:auto;margin-right:auto}
+.rueckmeldung-titel{margin:0 0 5px;font:800 21px var(--sans);letter-spacing:-.02em}
+.rueckmeldung-text{margin:0 0 16px;font-size:15.5px;color:var(--daemmer)}
+.rueckmeldung.ja .rueckmeldung-titel{color:var(--ja)}
+.rueckmeldung.nein .rueckmeldung-titel{color:var(--nein)}
+
+/* Serienzähler: taucht erst ab drei richtigen hintereinander auf */
+.serie{
+  display:inline-flex;align-items:center;gap:6px;
+  margin:0 0 10px;padding:5px 11px;
+  background:rgba(255,194,71,.14);border:1px solid rgba(255,194,71,.4);
+  border-radius:99px;font:700 13px var(--sans);color:var(--stern);
+}
+
+@media (prefers-reduced-motion: no-preference){
+  .rueckmeldung{animation:hochSchieben .2s cubic-bezier(.22,1,.36,1)}
+  @keyframes hochSchieben{from{transform:translateY(100%)}to{transform:translateY(0)}}
+  .serie{animation:serienPuls .4s ease-out}
+  @keyframes serienPuls{from{transform:scale(.7);opacity:0}to{transform:scale(1);opacity:1}}
+}
+@media (prefers-reduced-motion: reduce){
+  .antwort.falsch{animation:none}
+  .tafel.treffer{animation:none}
+}
+
+/* ---------------- Funkenflug ---------------- */
+
+.funkenfeld{position:fixed;inset:0;pointer-events:none;z-index:50;overflow:hidden}
+.funke{
+  position:absolute;width:var(--gr,8px);height:var(--gr,8px);
+  background:var(--farbe,#FFC247);border-radius:50%;
+  opacity:0;will-change:transform,opacity;
+  animation:funkenflug var(--dauer,760ms) cubic-bezier(.17,.84,.44,1) forwards;
+}
+.funke.zacke{border-radius:2px}
+@keyframes funkenflug{
+  0%  {opacity:1;transform:translate(0,0) scale(.4)}
+  70% {opacity:1}
+  100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(var(--ende,1.1))}
+}
+@media (prefers-reduced-motion: reduce){
+  .funkenfeld{display:none}
+}
+
+/* ---------------- Abschluss ---------------- */
+
+.siegel{
+  position:relative;width:118px;height:118px;margin:0 auto 24px;
+  display:grid;place-items:center;border-radius:50%;
+  font-size:54px;line-height:1;
+  background:radial-gradient(circle at 36% 30%, var(--karte-hoch), var(--karte));
+  border:1.5px solid var(--kante);
+}
+.siegel.gewonnen{
+  color:var(--stern);
+  background:radial-gradient(circle at 36% 30%, #3A3570, #221E4C);
+  border-color:rgba(255,194,71,.5);
+  box-shadow:0 0 54px rgba(255,194,71,.42);
+}
+.siegel.ruhig{color:var(--daemmer)}
+.siegel svg{display:block}
+.komet svg{display:block;width:30px;height:20px}
+.siegel.gewonnen::after{
+  content:"";position:absolute;inset:-14px;border-radius:50%;
+  border:1.5px solid rgba(255,194,71,.28);
+}
+@media (prefers-reduced-motion: no-preference){
+  .siegel.gewonnen{animation:sternAuf .62s cubic-bezier(.17,.89,.32,1.28)}
+  @keyframes sternAuf{
+    0%  {transform:scale(.3) rotate(-24deg);opacity:0}
+    65% {transform:scale(1.12) rotate(6deg);opacity:1}
+    100%{transform:scale(1) rotate(0)}
+  }
+  .siegel.gewonnen::after{animation:ringWeiten 1.5s ease-out infinite}
+  @keyframes ringWeiten{
+    0%  {transform:scale(.92);opacity:.85}
+    100%{transform:scale(1.3);opacity:0}
+  }
+}
+
+.fertig-titel{margin:0 0 10px;font:800 28px var(--sans);letter-spacing:-.025em}
+.fertig-text{margin:0 0 30px;color:var(--daemmer);font-size:16px}
+#ansicht-fertig .diagnose{text-align:left;margin-bottom:28px}
+#ansicht-fertig .rangliste{text-align:left}
+
+/* ---------------- Dialoge ---------------- */
+
+dialog{
+  border:none;padding:0;width:100%;max-width:480px;
+  margin:auto auto 0;background:var(--raum);color:var(--licht);
+  border-radius:24px 24px 0 0;border-top:1.5px solid var(--kante);
+}
+dialog::backdrop{background:rgba(4,7,20,.72)}
+.dialog-inhalt{padding:26px var(--rand) calc(26px + env(safe-area-inset-bottom))}
+.dialog-inhalt h3{margin:0 0 14px;font:800 21px var(--sans);letter-spacing:-.02em}
+
+.grundlage-text{font-size:16.5px;margin-bottom:24px;color:var(--licht)}
+.grundlage-text p{margin:0 0 13px}
+.grundlage-text em{color:var(--stern-hell);font-style:normal;font-weight:600}
+.grundlage-text .merksatz{
+  background:rgba(123,108,255,.14);border-left:3px solid var(--puls);
+  border-radius:0 12px 12px 0;padding:13px 15px;font-weight:600;
+}
+.grundlage-text .rechnung{
+  font:700 21px/1.65 var(--rund);text-align:center;
+  background:var(--karte);border:1.5px solid var(--kante);
+  border-radius:12px;padding:14px;
+}
+.nowrap{white-space:nowrap}
+
+/* ---------------- Wochenaufgabe im Dialog ---------------- */
+
+.wa-text{
+  font-size:16.5px;line-height:1.6;margin:0 0 20px;
+  white-space:pre-wrap;
+}
+.wa-schritt{
+  padding:16px;margin-bottom:12px;
+  background:var(--karte);border:1.5px solid var(--kante);border-radius:14px;
+}
+.wa-schritt.fertig{border-color:var(--ja);background:rgba(53,214,160,.08)}
+.wa-schritt p{margin:0 0 11px;font-size:15.5px}
+.wa-schritt-nr{
+  display:inline-block;min-width:22px;margin-right:7px;
+  font:700 13px var(--rund);color:var(--nebel);
+}
+.wa-eingabe{display:flex;gap:9px}
+.wa-eingabe input{
+  flex:1;min-height:48px;padding:0 14px;text-align:center;
+  font:700 19px var(--rund);color:var(--licht);
+  background:var(--raum);border:1.5px solid var(--kante);border-radius:12px;
+}
+.wa-eingabe button{
+  flex:0 0 auto;min-height:48px;padding:0 18px;
+  font:700 15px var(--sans);color:#fff;cursor:pointer;
+  background:var(--puls);border:none;border-radius:12px;
+}
+.wa-haken{color:var(--ja);font:700 16px var(--sans)}
+
+/* ---------------- Spitzname ---------------- */
+
+.namensfeld{display:flex;gap:9px;margin-bottom:8px}
+.namensfeld input{
+  flex:1;min-height:var(--tipp);padding:0 16px;
+  font:600 17px var(--sans);color:var(--licht);
+  background:var(--karte);border:1.5px solid var(--kante);border-radius:14px;
+}
+.namensfeld button{
+  flex:0 0 auto;min-height:var(--tipp);padding:0 20px;
+  font:700 16px var(--sans);color:#fff;cursor:pointer;
+  background:var(--puls);border:none;border-radius:14px;
+}

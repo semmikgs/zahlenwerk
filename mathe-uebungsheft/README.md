@@ -69,6 +69,17 @@ Zuordnung nicht wiederherstellen.
 Verliert ein Schüler seinen Streifen: im Lehrerbereich unter *Schüler* die Zeile
 anklicken und **Neuen Code vergeben**. Lernstand und Sterne bleiben erhalten.
 
+## Belohnung
+
+Richtige Antworten werden gefeiert, und zwar abgestuft: ein kleiner Funkenflug
+beim Treffer, ein größerer ab drei richtigen hintereinander, ein deutlich
+größerer ab fünf. Auch das Lob wechselt. Eine Rückmeldung, die immer gleich
+ausfällt, ist nach zwei Tagen Tapete.
+
+Alles läuft über CSS-Animationen auf kurzlebigen Elementen – kein WebGL, keine
+Bibliothek. Wer im Betriebssystem reduzierte Bewegung eingestellt hat, bekommt
+die Effekte nicht zu sehen; die Sterne zählen trotzdem.
+
 ## Sterne
 
 Ein Stern pro Tag. Dafür reicht eines von beidem:
@@ -82,6 +93,25 @@ keine Sterne.
 
 Fünf Sterne in einer Kalenderwoche ergeben den Wochenstern. Wochenendtage zählen
 mit, sind also Joker – wer in der Woche einen Tag verpasst, kann ihn nachholen.
+
+In der Rangliste erzählt das Sternsymbol die ganze Woche:
+
+| Symbol | Bedeutung |
+|---|---|
+| Gefüllter Stern | Wochenstern geschafft |
+| Gefüllter Stern mit Schweif | Wochenstern und Wochenaufgabe |
+| Hohler Stern mit Schweif | nur die Wochenaufgabe gelöst |
+| Hohler Stern | noch unterwegs |
+
+Sortiert wird nach Sternen, nicht nach Fehlerquote. Wer übt, kommt nach oben –
+auch wer viel falsch macht. Das ist Absicht.
+
+## Wochenaufgabe
+
+Eine Textaufgabe auf höherem Niveau, die sich nicht im Kopf lösen lässt. Sie
+wird in Schritten abgefragt, und jeder Schritt gibt erst den nächsten frei –
+damit tatsächlich schriftlich gerechnet wird statt geraten. Angelegt wird sie
+im Lehrerbereich unter *Wochenaufgabe*.
 
 ## Ein Kapitel ergänzen
 
@@ -157,6 +187,7 @@ js/config.js                   Zugangsdaten und Kursparameter
 js/db.js                       Speichern, Laden, Anmeldung
 js/engine.js                   Zufallszahlen, Aufgabenbau, Wiederholung, Auswertung
 js/app.js                      Ablauf der Schüler-App
+js/effekte.js                  Funkenflug, Vibration, abgestuftes Lob
 js/lehrer.js                   Ablauf des Lehrerbereichs
 kapitel/index.json             Liste der Kapitel
 kapitel/*.js                   die Kapitel selbst

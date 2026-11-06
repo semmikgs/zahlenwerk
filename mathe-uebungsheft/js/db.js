@@ -1,4 +1,4 @@
-import { CONFIG, imUebungsmodus } from './config.js?v=6';
+import { CONFIG, imUebungsmodus } from './config.js?v=7';
 
 /* Kleiner Speicher-Helfer: nutzt localStorage, wenn erlaubt, sonst den
    Arbeitsspeicher. So läuft die Seite auch in strengen Browsern. */
@@ -298,6 +298,12 @@ export const DB = {
     const { jahr, kw } = kalenderwoche();
     const zeilen = await rest(`wochenaufgabe?klasse=eq.${encodeURIComponent(klasse || '')}&jahr=eq.${jahr}&kw=eq.${kw}&aktiv=is.true&select=*`);
     return zeilen?.[0] || null;
+  },
+
+  /* Welche Schritte hat dieser Schüler schon richtig? */
+  async wochenaufgabeStand(aufgabe) {
+    if (!sitzung || this.nurLokal()) return [];
+    return await rest(`wochenaufgabe_versuch?nutzer=eq.${sitzung.id}&aufgabe=eq.${aufgabe}&select=schritt,richtig&order=erstellt`) || [];
   },
 
   async wochenaufgabeSchritt(aufgabe, schritt, eingabe, richtig) {

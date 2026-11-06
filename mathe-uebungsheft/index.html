@@ -3,17 +3,18 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#1C3F7C">
-<title>Mathe 9 – Übungsheft</title>
-<link rel="stylesheet" href="css/stil.css?v=6">
+<meta name="theme-color" content="#090E24">
+<meta name="color-scheme" content="dark">
+<title>Zahlenwerk</title>
+<link rel="stylesheet" href="css/stil.css?v=7">
 </head>
 <body>
 
-<!-- ANMELDUNG -->
+<!-- ======================= ANMELDUNG ======================= -->
 <section id="ansicht-login" class="ansicht sichtbar">
-  <div class="heft">
-    <h1 class="marke">Zahlenwerk<span class="marke-klasse">Mathe üben</span></h1>
-    <p class="lead">Tipp den Code von deinem Streifen ein. Groß- und Kleinschreibung ist egal.</p>
+  <div class="bahn">
+    <h1 class="marke">Zahlenwerk<span class="marke-klasse">Jeden Tag ein Stern</span></h1>
+    <p class="lead">Tipp den Code von deinem Streifen ein. Groß oder klein ist egal.</p>
     <form id="form-login" autocomplete="off">
       <label class="feld">
         <span>Dein Code</span>
@@ -27,12 +28,12 @@
 
     <p class="trenner"><span>oder</span></p>
     <button class="knopf knopf-zweit" id="knopf-gast">Ohne Code üben</button>
-    <p class="fussnote">Ohne Code kannst du alles ausprobieren. Dein Fortschritt bleibt dann nur auf diesem Gerät, du sammelst keine Sterne und stehst nicht in der Liste.</p>
+    <p class="fussnote">Ohne Code kannst du alles ausprobieren. Dein Fortschritt bleibt dann nur auf diesem Gerät, du sammelst keine Sterne und stehst nicht in der Rangliste.</p>
     <p class="fussnote">Dein Name wird nirgends gespeichert – nur der Code und was du geübt hast.</p>
   </div>
 </section>
 
-<!-- STARTSEITE -->
+<!-- ======================= STARTSEITE ======================= -->
 <section id="ansicht-start" class="ansicht">
   <header class="kopf">
     <div>
@@ -42,29 +43,56 @@
     <button class="knopf-klein" id="knopf-abmelden">Abmelden</button>
   </header>
 
-  <div class="heft">
+  <div class="bahn">
     <div class="gastband" id="gastband" hidden>
-      <p>Du übst als Gast. Der Fortschritt bleibt auf diesem Gerät.</p>
-      <button class="knopf-klein" id="knopf-gast-anmelden">Anmelden</button>
+      <p>Du übst ohne Code. Der Fortschritt bleibt auf diesem Gerät.</p>
+      <button class="knopf-klein" id="knopf-gast-anmelden">Code eingeben</button>
+    </div>
+
+    <!-- Sternenkette der Woche -->
+    <div class="kette" id="kette">
+      <div class="kette-reihe" id="kette-reihe"></div>
+      <p class="kette-text" id="kette-text"></p>
     </div>
 
     <div class="streifen">
-      <div class="streifen-wert"><strong id="stat-streak">0/5</strong><span>Sterne diese Woche</span></div>
-      <div class="streifen-wert"><strong id="stat-xp">0</strong><span>Sterne gesamt</span></div>
+      <div class="streifen-wert"><strong id="stat-woche">0/5</strong><span>diese Woche</span></div>
+      <div class="streifen-wert"><strong id="stat-gesamt">0</strong><span>Sterne gesamt</span></div>
       <div class="streifen-wert"><strong id="stat-quote">–</strong><span>richtig</span></div>
     </div>
 
-    <article class="tageskarte" id="tageskarte">
-      <p class="tageskarte-oben">Tagesaufgabe · ein Stern zu holen</p>
+    <!-- Tagesaufgabe -->
+    <article class="tageskarte">
+      <p class="tageskarte-oben">Tagesaufgabe</p>
       <p class="tageskarte-titel" id="tages-titel">Wird geladen …</p>
       <div class="balken"><i id="tages-balken" style="width:0%"></i></div>
       <p class="tageskarte-info" id="tages-info"></p>
       <button class="knopf knopf-haupt" id="knopf-start">Loslegen</button>
     </article>
 
-    <h2 class="ueberschrift">Gezielt üben</h2>
-    <p class="abschnitt-info">Ein einzelnes Thema, so lange du willst. Zählt genauso für deine Punkte.</p>
+    <!-- Wochenaufgabe -->
+    <button class="wochenkarte" id="wochenkarte" hidden>
+      <span class="komet" id="wochen-komet"></span>
+      <span class="wochenkarte-text">
+        <strong id="wochen-titel"></strong>
+        <small id="wochen-info"></small>
+      </span>
+    </button>
+
+    <!-- Rangliste -->
+    <h2 class="ueberschrift">Rangliste der Woche</h2>
+    <p class="abschnitt-info">Gezählt werden Sterne, nicht Fehler. Wer übt, kommt nach oben.</p>
+    <ul class="rangliste" id="rangliste"></ul>
+    <button class="knopf knopf-zweit" id="knopf-name" hidden>Spitznamen ändern</button>
+
+    <h2 class="ueberschrift" style="margin-top:30px">Gezielt üben</h2>
+    <p class="abschnitt-info">Ein einzelnes Thema, so lange du willst. Zählt genauso für deinen Stern.</p>
     <ul class="kapitelliste" id="kapitelliste"></ul>
+
+    <h2 class="ueberschrift">Woran du gerade arbeitest</h2>
+    <ul class="diagnose" id="diagnose">
+      <li class="diagnose-leer">Übe eine Lektion, dann steht hier, was schon sitzt und was noch wackelt.</li>
+    </ul>
 
     <h2 class="ueberschrift">Einstellung</h2>
     <label class="einstellung">
@@ -72,23 +100,21 @@
       <span>Antwort sofort prüfen, ohne den Prüfen-Knopf</span>
     </label>
 
-    <h2 class="ueberschrift">Woran du gerade arbeitest</h2>
-    <ul class="diagnose" id="diagnose"><li class="diagnose-leer">Übe eine Lektion, dann steht hier, was schon sitzt und was noch wackelt.</li></ul>
     <p class="version" id="version"></p>
   </div>
 </section>
 
-<!-- ÜBUNG -->
+<!-- ======================= ÜBUNG ======================= -->
 <section id="ansicht-uebung" class="ansicht">
-  <header class="kopf kopf-uebung">
+  <header class="kopf">
     <button class="knopf-klein" id="knopf-abbrechen">Zurück</button>
     <div class="balken balken-schmal"><i id="uebung-balken" style="width:0%"></i></div>
     <span class="zaehler" id="uebung-zaehler">1/8</span>
   </header>
 
-  <div class="heft heft-uebung">
+  <div class="bahn bahn-uebung">
     <p class="aufgabe-thema" id="aufgabe-thema"></p>
-    <div class="karo">
+    <div class="tafel" id="tafel">
       <p class="aufgabe-text" id="aufgabe-text"></p>
     </div>
 
@@ -96,7 +122,8 @@
     <button class="knopf knopf-haupt knopf-pruefen" id="knopf-pruefen" disabled>Prüfen</button>
 
     <form id="form-eingabe" class="eingabe" hidden>
-      <input id="in-antwort" type="text" inputmode="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Antwort">
+      <input id="in-antwort" type="text" inputmode="text" autocomplete="off"
+             autocapitalize="none" spellcheck="false" placeholder="Antwort">
       <button class="knopf knopf-haupt" type="submit">Prüfen</button>
     </form>
 
@@ -104,25 +131,31 @@
   </div>
 
   <div class="rueckmeldung" id="rueckmeldung" hidden>
+    <p class="serie" id="serie" hidden></p>
     <p class="rueckmeldung-titel" id="rueckmeldung-titel"></p>
     <p class="rueckmeldung-text" id="rueckmeldung-text"></p>
     <button class="knopf knopf-haupt" id="knopf-weiter">Weiter</button>
   </div>
 </section>
 
-<!-- ABSCHLUSS -->
+<!-- ======================= ABSCHLUSS ======================= -->
 <section id="ansicht-fertig" class="ansicht">
-  <div class="heft heft-mitte">
-    <p class="siegel" id="siegel">✓</p>
+  <div class="bahn bahn-mitte">
+    <p class="siegel" id="siegel">✦</p>
     <h2 class="fertig-titel" id="fertig-titel">Lektion geschafft</h2>
     <p class="fertig-text" id="fertig-text"></p>
+
     <ul class="diagnose" id="fertig-diagnose"></ul>
+
+    <h2 class="ueberschrift" id="fertig-rang-titel" hidden>So steht die Woche</h2>
+    <ul class="rangliste" id="fertig-rangliste"></ul>
+
     <button class="knopf knopf-haupt" id="knopf-heim">Zur Übersicht</button>
-    <button class="knopf-text" id="knopf-nochmal">Die gleiche Lektion noch einmal – mit neuen Zahlen</button>
+    <button class="knopf-text" id="knopf-nochmal">Noch eine Runde – mit neuen Zahlen</button>
   </div>
 </section>
 
-<!-- GRUNDLAGEN -->
+<!-- ======================= GRUNDLAGEN ======================= -->
 <dialog id="dialog-grundlage">
   <div class="dialog-inhalt">
     <h3 id="grundlage-titel"></h3>
@@ -131,6 +164,31 @@
   </div>
 </dialog>
 
-<script type="module" src="js/app.js?v=6"></script>
+<!-- ======================= SPITZNAME ======================= -->
+<dialog id="dialog-name">
+  <div class="dialog-inhalt">
+    <h3>Wie sollen dich die anderen sehen?</h3>
+    <p class="fussnote" style="margin:0 0 16px">Der Name steht in der Rangliste. Kein echter Name, nichts Gemeines – sonst setzt deine Lehrkraft ihn zurück.</p>
+    <div class="namensfeld">
+      <input id="in-spitzname" type="text" maxlength="18" placeholder="z. B. Nachtfalke" autocomplete="off">
+      <button id="knopf-name-speichern" type="button">Fertig</button>
+    </div>
+    <p id="name-fehler" class="fehlermeldung" hidden></p>
+    <button class="knopf-text" id="knopf-name-zu">Später</button>
+  </div>
+</dialog>
+
+<!-- ======================= WOCHENAUFGABE ======================= -->
+<dialog id="dialog-woche">
+  <div class="dialog-inhalt">
+    <h3 id="wa-titel"></h3>
+    <p class="fussnote" style="margin:0 0 14px">Rechne schriftlich. Jeder Schritt wird einzeln geprüft.</p>
+    <p class="wa-text" id="wa-text"></p>
+    <div id="wa-schritte"></div>
+    <button class="knopf knopf-haupt" id="knopf-wa-zu">Schließen</button>
+  </div>
+</dialog>
+
+<script type="module" src="js/app.js?v=7"></script>
 </body>
 </html>

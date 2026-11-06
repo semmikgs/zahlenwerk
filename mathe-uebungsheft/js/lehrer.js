@@ -1,5 +1,5 @@
-import { DB, kalenderwoche } from './db.js?v=6';
-import { ladeKapitelliste, ladeKapitel, auswertungNachTag, haeufigsteFehler } from './engine.js?v=6';
+import { DB, kalenderwoche } from './db.js?v=7';
+import { ladeKapitelliste, ladeKapitel, auswertungNachTag, haeufigsteFehler } from './engine.js?v=7';
 
 const $ = (id) => document.getElementById(id);
 const zeige = (name) =>
