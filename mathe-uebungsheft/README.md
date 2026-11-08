@@ -113,6 +113,11 @@ wird in Schritten abgefragt, und jeder Schritt gibt erst den nächsten frei –
 damit tatsächlich schriftlich gerechnet wird statt geraten. Angelegt wird sie
 im Lehrerbereich unter *Wochenaufgabe*.
 
+Damit die Schüler sie sehen, müssen Klasse, Jahr und Kalenderwoche passen.
+Der Kasten oben auf der Seite sagt dir, ob für diese Woche eine aktiv ist und
+für welche Klasse. Bei der Schreibweise der Klasse ist die Suche großzügig –
+„9A" findet auch, wer in „9a" steht.
+
 ## Ein Kapitel ergänzen
 
 1. Datei nach dem Muster von `kapitel/terme.js` in den Kapitelordner legen.
@@ -120,6 +125,10 @@ im Lehrerbereich unter *Wochenaufgabe*.
 
 Anzeigename, Reihenfolge und ob ein Kapitel aktiv ist oder im Archiv liegt,
 stellst du danach im Lehrerbereich unter *Kapitel* ein – ohne etwas zu pushen.
+
+Archiviert heißt für die Schüler: weg. Weder in der Tagesaufgabe noch in der
+Themenliste. Die Ergebnisse bleiben erhalten, und ein Zurückschalten macht das
+Kapitel sofort wieder sichtbar.
 
 Eine Kapiteldatei enthält vier Dinge:
 

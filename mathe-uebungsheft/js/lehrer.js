@@ -1,5 +1,5 @@
-import { DB, kalenderwoche } from './db.js?v=7';
-import { ladeKapitelliste, ladeKapitel, auswertungNachTag, haeufigsteFehler } from './engine.js?v=7';
+import { DB, kalenderwoche } from './db.js?v=8';
+import { ladeKapitelliste, ladeKapitel, auswertungNachTag, haeufigsteFehler } from './engine.js?v=8';
 
 const $ = (id) => document.getElementById(id);
 const zeige = (name) =>
@@ -129,6 +129,7 @@ async function laden(klasse) {
   if (!klasse) return;
   zustand.klasse = klasse;
   $('in-klasse').value = klasse;
+  if (!$('wa-klasse').value.trim()) $('wa-klasse').value = klasse;
   zustand.daten = await DB.klasseLaden(klasse);
   ueberblickZeichnen();
   schuelerZeichnen();
@@ -440,7 +441,7 @@ $('knopf-wa-speichern').addEventListener('click', async () => {
     .filter((s) => s.frage && s.loesung);
 
   const aufgabe = {
-    klasse: zustand.klasse || $('in-klasse').value.trim(),
+    klasse: ($('wa-klasse').value || zustand.klasse).trim(),
     jahr: Number($('wa-jahr').value),
     kw: Number($('wa-kw').value),
     titel: $('wa-titel').value.trim(),
@@ -457,7 +458,7 @@ $('knopf-wa-speichern').addEventListener('click', async () => {
 
   try {
     await DB.wochenaufgabeSpeichern(aufgabe);
-    meldung.textContent = `Gespeichert für KW ${aufgabe.kw}.`;
+    meldung.textContent = `Gespeichert: KW ${aufgabe.kw}/${aufgabe.jahr}, Klasse ${aufgabe.klasse}, ${schritte.length} Schritte.`;
     meldung.className = 'erfolg'; meldung.hidden = false;
     await wochenaufgabenZeichnen();
   } catch (fehler) {
@@ -471,14 +472,31 @@ async function wochenaufgabenZeichnen() {
   let liste = [];
   try { liste = await DB.wochenaufgabenListe(zustand.klasse); } catch {}
 
+  const { jahr, kw } = kalenderwoche();
+  const jetzige = liste.find((w) => w.jahr === jahr && w.kw === kw && w.aktiv);
+
+  // Ohne diesen Hinweis bleibt unklar, warum die Schüler nichts sehen.
+  $('wa-stand').innerHTML = jetzige
+    ? `<p>Diese Woche läuft <strong>${gross(jetzige.titel)}</strong> für Klasse ${jetzige.klasse}.</p>
+       <small>KW ${kw}/${jahr} · ${(jetzige.schritte || []).length} Schritte</small>`
+    : `<p>Für KW ${kw}/${jahr} ist in Klasse ${zustand.klasse} <strong>keine Wochenaufgabe aktiv</strong>.</p>
+       <small>Die Schüler sehen deshalb keine. Klasse und Kalenderwoche unten müssen genau passen.</small>`;
+
+  // Wie viele haben sie vollständig gelöst?
+  let geloest = {};
+  try { geloest = await DB.wochenaufgabeBilanz(liste.map((w) => w.id)); } catch {}
+
   $('tabelle-wa').innerHTML = liste.length
-    ? liste.map((w) => `<tr>
-        <td>${w.kw}/${w.jahr}</td>
-        <td>${w.titel}</td>
-        <td class="rechts">${(w.schritte || []).length}</td>
-        <td class="rechts">–</td>
-        <td><button class="knopf knopf-rand knopf-klein" data-wa="${w.id}">Bearbeiten</button></td>
-      </tr>`).join('')
+    ? liste.map((w) => {
+        const istJetzt = w.jahr === jahr && w.kw === kw;
+        return `<tr${istJetzt ? ' style="background:#F2F6FD"' : ''}>
+          <td>${w.kw}/${w.jahr}${istJetzt ? ' <strong>· jetzt</strong>' : ''}</td>
+          <td>${w.titel}<br><small style="color:var(--grau)">Klasse ${w.klasse}</small></td>
+          <td class="rechts">${(w.schritte || []).length}</td>
+          <td class="rechts">${geloest[w.id] ?? 0}</td>
+          <td><button class="knopf knopf-rand knopf-klein" data-wa="${w.id}">Bearbeiten</button></td>
+        </tr>`;
+      }).join('')
     : '<tr><td colspan="5" class="leer">Noch keine Wochenaufgabe angelegt.</td></tr>';
 
   $('tabelle-wa').querySelectorAll('button[data-wa]').forEach((b) => {
@@ -487,6 +505,7 @@ async function wochenaufgabenZeichnen() {
       if (!w) return;
       $('wa-titel').value = w.titel;
       $('wa-text').value = w.text;
+      $('wa-klasse').value = w.klasse;
       $('wa-jahr').value = w.jahr;
       $('wa-kw').value = w.kw;
       $('wa-schritte').innerHTML = '';

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title>Zahlenwerk – Lehrerbereich</title>
-<link rel="stylesheet" href="css/lehrer.css?v=7">
+<link rel="stylesheet" href="css/lehrer.css?v=8">
 </head>
 <body>
 
@@ -139,9 +139,13 @@
       bekommt einen Schweif an den Wochenstern.
     </p>
 
-    <div style="display:grid;grid-template-columns:1fr 110px 110px;gap:16px">
+    <div id="wa-stand" class="knackpunkt" style="border-left-color:var(--tinte)"></div>
+
+    <div style="display:grid;grid-template-columns:1fr 110px 110px 110px;gap:16px">
       <label class="feld"><span>Titel</span>
         <input id="wa-titel" type="text" placeholder="Handyvertrag"></label>
+      <label class="feld"><span>Klasse</span>
+        <input id="wa-klasse" type="text" placeholder="9a"></label>
       <label class="feld"><span>Jahr</span>
         <input id="wa-jahr" type="number"></label>
       <label class="feld"><span>Kalenderwoche</span>
@@ -218,6 +222,6 @@
   </div>
 </dialog>
 
-<script type="module" src="js/lehrer.js?v=7"></script>
+<script type="module" src="js/lehrer.js?v=8"></script>
 </body>
 </html>

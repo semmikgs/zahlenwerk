@@ -1,4 +1,4 @@
-import { CONFIG, imUebungsmodus } from './config.js?v=7';
+import { CONFIG, imUebungsmodus } from './config.js?v=8';
 
 /* Kleiner Speicher-Helfer: nutzt localStorage, wenn erlaubt, sonst den
    Arbeitsspeicher. So läuft die Seite auch in strengen Browsern. */
@@ -74,6 +74,9 @@ const rest = async (pfad, optionen = {}, zweiterVersuch = false) => {
   const schreibend = !!optionen.method && optionen.method !== 'GET';
   const antwort = await fetch(`${CONFIG.supabaseUrl}/rest/v1/${pfad}`, {
     ...optionen,
+    // Ohne das liefert der Browser nach einer Änderung gern den alten Stand
+    // aus seinem Zwischenspeicher – und es sieht aus, als sei nichts passiert.
+    cache: 'no-store',
     headers: { ...kopf(schreibend), ...(optionen.headers || {}) },
   });
 
@@ -280,15 +283,31 @@ export const DB = {
 
   async spitznameSetzen(name) {
     if (!sitzung) return;
-    sitzung.spitzname = name;
-    sitzung.name = name || sitzung.code;
-    jsonSchreib('sitzung', sitzung);
-    if (this.nurLokal()) return;
-    await rest(`profil?id=eq.${sitzung.id}`, {
+
+    if (this.nurLokal()) {
+      sitzung.spitzname = name;
+      sitzung.name = name || sitzung.code;
+      jsonSchreib('sitzung', sitzung);
+      return;
+    }
+
+    // Mit "return=representation" kommt die geschriebene Zeile zurück. Bleibt
+    // sie leer, hat eine Zugriffsregel den Schreibvorgang verworfen – ohne das
+    // sähe ein gesperrter Name aus wie ein erfolgreiches Speichern.
+    const zeilen = await rest(`profil?id=eq.${sitzung.id}&select=spitzname,spitzname_gesperrt`, {
       method: 'PATCH',
-      headers: { Prefer: 'return=minimal' },
+      headers: { Prefer: 'return=representation' },
       body: JSON.stringify({ spitzname: name }),
     });
+
+    if (!zeilen?.length) {
+      throw new Error('Der Name wurde nicht gespeichert. Vermutlich hat deine Lehrkraft ihn gesperrt.');
+    }
+
+    sitzung.spitzname = zeilen[0].spitzname;
+    sitzung.spitzname_gesperrt = zeilen[0].spitzname_gesperrt;
+    sitzung.name = sitzung.spitzname || sitzung.code;
+    jsonSchreib('sitzung', sitzung);
   },
 
   /* ---------------- Wochenaufgabe ---------------- */
@@ -296,7 +315,11 @@ export const DB = {
   async wochenaufgabeLaden(klasse = sitzung?.klasse) {
     if (!sitzung || this.nurLokal()) return null;
     const { jahr, kw } = kalenderwoche();
-    const zeilen = await rest(`wochenaufgabe?klasse=eq.${encodeURIComponent(klasse || '')}&jahr=eq.${jahr}&kw=eq.${kw}&aktiv=is.true&select=*`);
+    // Klassenvergleich ohne Rücksicht auf Groß- und Kleinschreibung: sonst
+    // findet ein Schüler aus "9a" nichts, was die Lehrkraft für "9A" anlegte.
+    const zeilen = await rest(
+      `wochenaufgabe?klasse=ilike.${encodeURIComponent((klasse || '').trim())}`
+      + `&jahr=eq.${jahr}&kw=eq.${kw}&aktiv=is.true&select=*`);
     return zeilen?.[0] || null;
   },
 
@@ -321,6 +344,33 @@ export const DB = {
       headers: { Prefer: 'resolution=merge-duplicates,return=representation' },
       body: JSON.stringify([aufgabe]),
     });
+  },
+
+  /* Wie viele Schüler haben eine Wochenaufgabe vollständig gelöst?
+     Gezählt werden nur die, die jeden Schritt richtig hatten. */
+  async wochenaufgabeBilanz(ids) {
+    if (!ids?.length) return {};
+    const zeilen = await rest(
+      `wochenaufgabe_versuch?aufgabe=in.(${ids.join(',')})&richtig=is.true&select=aufgabe,nutzer,schritt`) || [];
+    const aufgaben = await rest(
+      `wochenaufgabe?id=in.(${ids.join(',')})&select=id,schritte`) || [];
+    const noetig = Object.fromEntries(aufgaben.map((a) => [a.id, (a.schritte || []).length]));
+
+    const proNutzer = new Map();
+    for (const z of zeilen) {
+      const schluessel = `${z.aufgabe}|${z.nutzer}`;
+      if (!proNutzer.has(schluessel)) proNutzer.set(schluessel, new Set());
+      proNutzer.get(schluessel).add(z.schritt);
+    }
+
+    const bilanz = {};
+    for (const [schluessel, schritte] of proNutzer) {
+      const aufgabe = Number(schluessel.split('|')[0]);
+      if (noetig[aufgabe] && schritte.size >= noetig[aufgabe]) {
+        bilanz[aufgabe] = (bilanz[aufgabe] || 0) + 1;
+      }
+    }
+    return bilanz;
   },
 
   async wochenaufgabenListe(klasse) {

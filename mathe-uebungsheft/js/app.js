@@ -1,10 +1,10 @@
-import { CONFIG } from './config.js?v=7';
-import { DB, speicher, kalenderwoche } from './db.js?v=7';
+import { CONFIG } from './config.js?v=8';
+import { DB, speicher, kalenderwoche } from './db.js?v=8';
 import {
   ladeKapitelliste, ladeKapitel, baueAufgabe, waehleVorlagen,
   naechsteWiederholung, auswertungNachTag, wuerfel, startwert, heute,
-} from './engine.js?v=7';
-import { feiern, danebenRums, lobText, sternenregen, funken } from './effekte.js?v=7';
+} from './engine.js?v=8';
+import { feiern, danebenRums, lobText, sternenregen, funken } from './effekte.js?v=8';
 
 const $ = (id) => document.getElementById(id);
 
@@ -142,7 +142,7 @@ async function startseite() {
   zeichneKapitel();
   zeichneDiagnose($('diagnose'), versuche, 4);
 
-  $('version').textContent = 'Version 7' + (DB.nurLokal() ? ' · Stand nur auf diesem Gerät' : '');
+  $('version').textContent = 'Version 8' + (DB.nurLokal() ? ' · Stand nur auf diesem Gerät' : '');
   zeige('start');
 
   // Wer noch keinen Spitznamen hat, wird einmal gefragt – nicht aufdringlich,
@@ -165,7 +165,6 @@ function kapitelOrdnen() {
   }
   zustand.kapitel.sort((a, b) => a.reihenfolge - b.reihenfolge);
   zustand.aktiveKapitel = zustand.kapitel.filter((k) => !k.archiviert);
-  if (!zustand.aktiveKapitel.length) zustand.aktiveKapitel = zustand.kapitel;
 }
 
 /* ---------------- Sternenkette ---------------- */
@@ -213,6 +212,15 @@ function zeichneKette(dieseWoche) {
 function zeichneTageskarte(dieseWoche) {
   const sternHeute = zustand.sterne.some((s) => s.tag === heute());
   const tag = tagesbilanz();
+
+  if (!zustand.aktiveKapitel.length) {
+    $('tages-titel').textContent = 'Gerade nichts freigeschaltet';
+    $('tages-info').textContent = 'Deine Lehrkraft hat alle Themen ins Archiv gelegt. Schau später noch einmal rein.';
+    $('tages-balken').style.width = '0%';
+    $('knopf-start').disabled = true;
+    return;
+  }
+  $('knopf-start').disabled = false;
 
   $('tages-titel').textContent = sternHeute
     ? 'Stern für heute geholt'
@@ -343,6 +351,10 @@ function nameFragen() {
   setTimeout(() => $('in-spitzname').focus(), 60);
 }
 
+$('in-spitzname').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') { e.preventDefault(); $('knopf-name-speichern').click(); }
+});
+
 $('knopf-name-speichern').addEventListener('click', async () => {
   const name = $('in-spitzname').value.trim().replace(/\s+/g, ' ');
   const fehler = $('name-fehler');
@@ -470,7 +482,17 @@ function zeichneKapitel() {
   const liste = $('kapitelliste');
   liste.innerHTML = '';
 
-  for (const k of zustand.kapitel) {
+  // Archiviert heißt weg: weder in der Tagesaufgabe noch in dieser Liste.
+  // Die Ergebnisse bleiben in der Datenbank, die Lehrkraft kann jederzeit
+  // zurückschalten.
+  const sichtbar = zustand.kapitel.filter((k) => !k.archiviert);
+
+  if (!sichtbar.length) {
+    liste.innerHTML = '<li class="rangliste-leer">Zurzeit ist kein Thema freigeschaltet.</li>';
+    return;
+  }
+
+  for (const k of sichtbar) {
     const gesamt = k.vorlagen.length;
     const staerken = k.vorlagen.map((v) => Math.min(zustand.lernstand[v.id]?.box ?? 0, 3) / 3);
     const geuebt = staerken.filter((x) => x > 0).length;
@@ -483,11 +505,11 @@ function zeichneKapitel() {
 
     const li = document.createElement('li');
     li.innerHTML = `
-      <button type="button" class="${k.archiviert ? 'archiv' : ''}">
+      <button type="button">
         ${ring(anteil)}
         <span>
           <strong>${entschaerfen(k.anzeige || k.titel)}</strong>
-          <small>${k.archiviert ? 'Archiv · ' : ''}${text}</small>
+          <small>${text}</small>
         </span>
       </button>`;
     li.querySelector('button').addEventListener('click', () => starteLektion([k]));
