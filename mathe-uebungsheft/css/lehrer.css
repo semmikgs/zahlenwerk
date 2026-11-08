@@ -128,12 +128,27 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{
   border:1px dashed #AAB2BE;border-right:none;border-bottom:none;
 }
 .streifen div{
+  display:flex;align-items:center;gap:12px;
   border-right:1px dashed #AAB2BE;border-bottom:1px dashed #AAB2BE;
-  padding:12px 16px;min-height:88px;
+  padding:12px 14px;min-height:104px;
 }
-.streifen b{display:block;font-size:15px;font-weight:600;margin-bottom:4px}
-.streifen .zugang{font:700 23px var(--mono);letter-spacing:.14em;color:var(--tinte-tief)}
-.streifen small{display:block;font-size:11px;color:var(--grau);margin-top:5px}
+.streifen-text{flex:1;min-width:0}
+.streifen b{display:block;font-size:15px;font-weight:600;margin-bottom:3px}
+.streifen .zugang{
+  display:block;font:700 22px var(--mono);letter-spacing:.13em;color:var(--tinte-tief);
+}
+.streifen small{display:block;font-size:10.5px;color:var(--grau);margin-top:4px;word-break:break-all}
+.streifen-qr{flex:0 0 auto;line-height:0}
+.streifen-qr svg{display:block}
+
+.einstellung-zeile{
+  display:flex;align-items:flex-start;gap:12px;
+  padding:14px 16px;margin:4px 0 18px;max-width:640px;
+  background:#fff;border:1.5px solid var(--linie);border-radius:12px;
+  font-size:15px;cursor:pointer;
+}
+.einstellung-zeile input{width:20px;height:20px;accent-color:var(--tinte);flex:0 0 auto;margin-top:2px}
+.einstellung-zeile small{color:var(--grau);line-height:1.45}
 
 @media print{
   body{background:#fff}

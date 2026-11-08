@@ -1,5 +1,6 @@
-import { DB, kalenderwoche } from './db.js?v=8';
-import { ladeKapitelliste, ladeKapitel, auswertungNachTag, haeufigsteFehler } from './engine.js?v=8';
+import { DB, kalenderwoche } from './db.js?v=9';
+import { ladeKapitelliste, ladeKapitel, auswertungNachTag, haeufigsteFehler } from './engine.js?v=9';
+import { qrSvg } from './qr.js?v=9';
 
 const $ = (id) => document.getElementById(id);
 const zeige = (name) =>
@@ -391,18 +392,36 @@ $('knopf-anlegen').addEventListener('click', async () => {
 const KURS_ADRESSE = location.href.replace(/lehrer\.html.*$/, '');
 
 function streifenZeichnen(klasse, schueler) {
+  const direkt = $('schalter-qr-login').checked;
+
   $('codeliste').hidden = false;
   $('codeliste-titel').textContent = `Zahlenwerk – Zugangscodes ${klasse}`;
-  $('streifen').innerHTML = schueler.map((s) => `
-    <div>
-      <b>${s.name}</b>
-      ${s.code
-        ? `<span class="zugang">${s.code}</span>
-           <small>${KURS_ADRESSE.replace(/^https?:\/\//, '')}</small>`
-        : `<span style="color:var(--rot)">${s.fehler || 'Fehlgeschlagen'}</span>`}
-    </div>`).join('');
+
+  $('streifen').innerHTML = schueler.map((s) => {
+    if (!s.code) {
+      return `<div><span class="streifen-text" style="color:var(--rot)">
+        <b>${s.name}</b>${s.fehler || 'Fehlgeschlagen'}</span></div>`;
+    }
+    // Mit Haken führt der QR-Code direkt ins Konto, ohne nur auf die Seite.
+    const ziel = direkt ? `${KURS_ADRESSE}?code=${s.code}` : KURS_ADRESSE;
+    return `<div>
+      <span class="streifen-text">
+        <b>${s.name}</b>
+        <span class="zugang">${s.code}</span>
+        <small>${KURS_ADRESSE.replace(/^https?:\/\//, '')}</small>
+      </span>
+      <span class="streifen-qr">${qrSvg(ziel)}</span>
+    </div>`;
+  }).join('');
+
   $('codeliste').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
+
+$('schalter-qr-login').addEventListener('change', () => {
+  if (zustand.letzteCodes.length) {
+    streifenZeichnen($('in-klasse').value.trim() || zustand.klasse, zustand.letzteCodes);
+  }
+});
 
 $('knopf-drucken').addEventListener('click', () => window.print());
 

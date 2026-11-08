@@ -62,6 +62,16 @@ daraus eine PDF-Seite erzeugen.
 Die Codes benutzen keine verwechselbaren Zeichen – kein O neben 0, kein I neben
 1 – damit das Abtippen auf dem Handy klappt.
 
+Auf jedem Streifen steht ein QR-Code. Ohne Haken bei *QR-Code meldet direkt an*
+führt er nur auf die Anmeldeseite, der Code wird getippt. Mit Haken enthält er
+den Zugangscode und meldet beim Scannen sofort an – bequemer, aber wer den
+Streifen findet, kommt damit auch ins Konto. Für eine neunte Klasse ist das
+meist vertretbar; die Entscheidung liegt bei dir.
+
+Der QR-Code wird im Browser erzeugt, aus einer Bibliothek, die im Repository
+liegt (`js/fremd/`). Es geht keine Anfrage nach außen, und im Schulnetz
+blockiert nichts.
+
 **Die Namen werden nicht gespeichert.** Sie dienen nur dazu, die Codes den
 richtigen Streifen zuzuordnen. Geht die gedruckte Seite verloren, lässt sich die
 Zuordnung nicht wiederherstellen.
@@ -195,6 +205,8 @@ css/lehrer.css                 Aussehen des Lehrerbereichs
 js/config.js                   Zugangsdaten und Kursparameter
 js/db.js                       Speichern, Laden, Anmeldung
 js/engine.js                   Zufallszahlen, Aufgabenbau, Wiederholung, Auswertung
+js/qr.js                       QR-Codes für die Streifen
+js/fremd/                      übernommener Fremdcode mit Herkunftsangabe
 js/app.js                      Ablauf der Schüler-App
 js/effekte.js                  Funkenflug, Vibration, abgestuftes Lob
 js/lehrer.js                   Ablauf des Lehrerbereichs

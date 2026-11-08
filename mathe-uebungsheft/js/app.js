@@ -1,10 +1,10 @@
-import { CONFIG } from './config.js?v=8';
-import { DB, speicher, kalenderwoche } from './db.js?v=8';
+import { CONFIG } from './config.js?v=9';
+import { DB, speicher, kalenderwoche } from './db.js?v=9';
 import {
   ladeKapitelliste, ladeKapitel, baueAufgabe, waehleVorlagen,
   naechsteWiederholung, auswertungNachTag, wuerfel, startwert, heute,
-} from './engine.js?v=8';
-import { feiern, danebenRums, lobText, sternenregen, funken } from './effekte.js?v=8';
+} from './engine.js?v=9';
+import { feiern, danebenRums, lobText, sternenregen, funken } from './effekte.js?v=9';
 
 const $ = (id) => document.getElementById(id);
 
@@ -59,6 +59,27 @@ async function los() {
     Object.assign(zustand.tagNamen, k.tagNamen || {});
     Object.assign(zustand.fehlerNamen, k.fehlerNamen || {});
   }
+
+  // Wer den QR-Code vom Streifen scannt, kommt mit seinem Code in der Adresse
+  // an und soll nicht noch einmal tippen müssen.
+  const ausAdresse = new URLSearchParams(location.search).get('code');
+  if (ausAdresse) {
+    // Code sofort aus der Adresszeile nehmen, damit er nicht im Verlauf
+    // stehen bleibt oder beim Teilen des Links mitwandert.
+    history.replaceState(null, '', location.pathname);
+    try {
+      await DB.mitCode(ausAdresse);
+      await startseite();
+      return;
+    } catch (fehler) {
+      zeige('login');
+      $('in-code').value = ausAdresse.toUpperCase();
+      $('login-fehler').textContent = fehler.message;
+      $('login-fehler').hidden = false;
+      return;
+    }
+  }
+
   if (DB.nutzer()) await startseite();
   else zeige('login');
 }
@@ -142,7 +163,7 @@ async function startseite() {
   zeichneKapitel();
   zeichneDiagnose($('diagnose'), versuche, 4);
 
-  $('version').textContent = 'Version 8' + (DB.nurLokal() ? ' · Stand nur auf diesem Gerät' : '');
+  $('version').textContent = 'Version 9' + (DB.nurLokal() ? ' · Stand nur auf diesem Gerät' : '');
   zeige('start');
 
   // Wer noch keinen Spitznamen hat, wird einmal gefragt – nicht aufdringlich,
@@ -398,7 +419,7 @@ function zeichneWochenaufgabe() {
   });
   $('wochen-titel').textContent = wa.titel;
   $('wochen-info').textContent = fertig
-    ? 'Gelöst – dein Stern hat jetzt einen Schweif.'
+    ? 'Bearbeitung abgeschlossen.'
     : `Wochenaufgabe · ${geschafft} von ${(wa.schritte || []).length} Schritten`;
 }
 
@@ -583,8 +604,10 @@ function zeichneAufgabe() {
   $('uebung-balken').style.width = `${(l.index / l.aufgaben.length) * 100}%`;
   $('aufgabe-thema').textContent = `${a.kapitelTitel} · ${a.thema}`;
   $('aufgabe-text').innerHTML = (a.satz ? `<span class="frage-satz">${a.satz}</span>` : '') + a.frage;
+  $('tafel').classList.toggle('mit-satz', !!a.satz);
   $('rueckmeldung').hidden = true;
   $('serie').hidden = true;
+  document.querySelector('.bahn-uebung').style.paddingBottom = '';
   $('knopf-hilfe').hidden = !a.grundlage;
   $('tafel').classList.remove('treffer');
 
@@ -600,6 +623,13 @@ function zeichneAufgabe() {
     eingabe.hidden = true;
     pruefKnopf.hidden = false;
     pruefKnopf.disabled = true;
+
+    // Kurze Ergebnisse passen zu zweit nebeneinander. Das halbiert die Höhe
+    // und erspart auf dem Handy das Scrollen während der Aufgabe.
+    const laengste = Math.max(...a.optionen.map((o) => anz(o.wert).length));
+    felder.classList.toggle('zweispaltig', laengste <= 7);
+    felder.classList.toggle('gedraengt', laengste > 7);
+
     for (const option of a.optionen) {
       const b = document.createElement('button');
       b.type = 'button';
@@ -692,6 +722,28 @@ function pruefe(richtig, fehler, knopf) {
         ? `Typischer Stolperstein: ${zustand.fehlerNamen[fehler]}.`
         : a.weg || '');
   $('knopf-weiter').focus({ preventScroll: true });
+  platzFuerRueckmeldung();
+}
+
+/* Das Rückmeldefeld liegt fest am unteren Rand. Erst wenn es erscheint, wird
+   darunter Platz freigeräumt – vorher würde die Reserve die Aufgabe unnötig
+   nach oben schieben und Scrollen erzwingen. Steht die richtige Antwort
+   dahinter, wird sie in den sichtbaren Bereich geholt. */
+function platzFuerRueckmeldung() {
+  const feld = $('rueckmeldung');
+  const bahn = document.querySelector('.bahn-uebung');
+  requestAnimationFrame(() => {
+    const hoehe = feld.getBoundingClientRect().height;
+    bahn.style.paddingBottom = `${Math.round(hoehe) + 20}px`;
+
+    const treffer = $('antworten').querySelector('.richtig') || $('antworten').querySelector('.falsch');
+    if (!treffer) return;
+    const ort = treffer.getBoundingClientRect();
+    const frei = window.innerHeight - hoehe;
+    if (ort.bottom > frei) {
+      window.scrollBy({ top: ort.bottom - frei + 12, behavior: 'smooth' });
+    }
+  });
 }
 
 $('knopf-weiter').addEventListener('click', async () => {

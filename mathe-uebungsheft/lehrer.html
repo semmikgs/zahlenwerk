@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title>Zahlenwerk – Lehrerbereich</title>
-<link rel="stylesheet" href="css/lehrer.css?v=8">
+<link rel="stylesheet" href="css/lehrer.css?v=9">
 </head>
 <body>
 
@@ -109,6 +109,16 @@
       <label class="feld"><span>Klasse</span>
         <input id="in-klasse" type="text" placeholder="9a"></label>
     </div>
+
+    <label class="einstellung-zeile">
+      <input type="checkbox" id="schalter-qr-login">
+      <span>
+        <strong>QR-Code meldet direkt an</strong><br>
+        <small>Scannen genügt, der Code muss nicht mehr abgetippt werden. Dafür kommt
+        jeder, der den Streifen findet, ohne Weiteres in das Konto. Ohne Haken führt
+        der QR-Code nur auf die Anmeldeseite.</small>
+      </span>
+    </label>
 
     <p id="zugang-fehler" class="fehler" hidden></p>
     <div class="knopfreihe">
@@ -222,6 +232,6 @@
   </div>
 </dialog>
 
-<script type="module" src="js/lehrer.js?v=8"></script>
+<script type="module" src="js/lehrer.js?v=9"></script>
 </body>
 </html>

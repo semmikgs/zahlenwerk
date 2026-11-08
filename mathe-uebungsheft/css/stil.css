@@ -83,7 +83,7 @@ body::after{
 
 .bahn{max-width:480px;margin:0 auto;padding:var(--rand) var(--rand) 56px}
 .bahn-mitte{text-align:center;padding-top:40px}
-.bahn-uebung{padding-bottom:210px}
+.bahn-uebung{padding-bottom:24px;transition:padding-bottom .18s ease}
 
 /* ---------------- Kopfzeile ---------------- */
 
@@ -170,7 +170,7 @@ body::after{
   border-radius:11px;
 }
 .knopf-text{
-  display:block;width:100%;margin-top:22px;padding:13px;
+  display:block;width:100%;margin-top:14px;padding:11px;
   background:none;border:none;color:var(--daemmer);
   font:500 15.5px var(--sans);cursor:pointer;
   text-decoration:underline;text-underline-offset:4px;
@@ -363,14 +363,14 @@ body::after{
 /* ---------------- Aufgabe ---------------- */
 
 .aufgabe-thema{
-  margin:10px 0 14px;font-size:13px;font-weight:600;color:var(--nebel);
+  margin:8px 0 11px;font-size:13px;font-weight:600;color:var(--nebel);
 }
 
 .tafel{
   position:relative;overflow:hidden;
   background:linear-gradient(165deg, var(--karte), #151C3E);
   border:1.5px solid var(--kante);border-radius:22px;
-  padding:38px 20px;margin-bottom:22px;
+  padding:28px 18px;margin-bottom:18px;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.07), 0 10px 26px rgba(5,9,28,.5);
 }
 .aufgabe-text{
@@ -379,9 +379,12 @@ body::after{
   word-break:break-word;
 }
 .aufgabe-text .frage-satz{
-  display:block;margin-bottom:16px;
-  font:500 17px/1.45 var(--sans);color:var(--daemmer);letter-spacing:0;
+  display:block;margin-bottom:12px;
+  font:500 16.5px/1.4 var(--sans);color:var(--daemmer);letter-spacing:0;
 }
+/* Steht ein Fragesatz über der Rechnung, braucht die Tafel weniger Polster. */
+.tafel.mit-satz{padding:20px 18px}
+.tafel.mit-satz .aufgabe-text{font-size:29px}
 
 /* Aufleuchten der Tafel bei richtiger Antwort */
 .tafel.treffer{animation:tafelLeuchten .7s ease-out}
@@ -394,6 +397,16 @@ body::after{
 /* ---------------- Antworten ---------------- */
 
 .antworten{display:grid;gap:10px}
+/* Kurze Ergebnisse stehen zu zweit nebeneinander – so bleibt die Aufgabe
+   auf dem Handy ohne Scrollen bedienbar. */
+.antworten.zweispaltig{grid-template-columns:1fr 1fr;gap:9px}
+.antworten.zweispaltig .antwort{padding:13px 8px;font-size:21px}
+
+/* Lange Ergebnisse passen nicht nebeneinander – dann wenigstens flacher,
+   damit die Liste nicht über den Bildschirmrand läuft. */
+.antworten.gedraengt{gap:7px}
+.antworten.gedraengt .antwort{min-height:46px;padding:9px 14px;font-size:17.5px}
+.antworten.gedraengt + .knopf-pruefen{min-height:50px;margin-top:11px}
 .antwort{
   position:relative;min-height:var(--tipp);padding:13px 18px;
   background:linear-gradient(180deg, var(--karte-hoch), var(--karte));
@@ -426,7 +439,7 @@ body::after{
 }
 .antwort[disabled]{cursor:default}
 
-.knopf-pruefen{margin-top:18px}
+.knopf-pruefen{margin-top:14px}
 .eingabe{display:grid;gap:11px}
 #in-antwort{
   width:100%;min-height:var(--tipp);padding:0 18px;text-align:center;
