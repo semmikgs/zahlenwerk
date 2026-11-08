@@ -98,6 +98,8 @@ input:focus-visible,select:focus-visible,textarea:focus-visible{
 .tabelle td{padding:11px 12px;border-bottom:1px solid var(--linie);vertical-align:middle}
 .tabelle tr:last-child td{border-bottom:none}
 .tabelle tbody tr:hover{background:#F7F9FC}
+.tabelle input[type=checkbox]{width:19px;height:19px;accent-color:var(--tinte);cursor:pointer}
+.tabelle th input[type=checkbox]{margin:0}
 .rechts{text-align:right}
 .code{font:600 15px var(--mono);letter-spacing:.08em;color:var(--tinte-tief)}
 .klickbar{cursor:pointer}

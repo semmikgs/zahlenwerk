@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title>Zahlenwerk – Lehrerbereich</title>
-<link rel="stylesheet" href="css/lehrer.css?v=9">
+<link rel="stylesheet" href="css/lehrer.css?v=10">
 </head>
 <body>
 
@@ -78,12 +78,17 @@
   <!-- ---------- Schüler ---------- -->
   <div class="bahn blatt" id="blatt-schueler" hidden>
     <h2>Einzelne Schüler</h2>
-    <p class="hinweis">Eine Zeile anklicken öffnet das vollständige Bild zu diesem Schüler.</p>
+    <p class="hinweis">Eine Zeile anklicken öffnet das vollständige Bild zu diesem Schüler.
+      Zum Löschen die Kästchen links benutzen.</p>
     <div class="knopfreihe">
+      <button class="knopf knopf-rand knopf-klein" id="knopf-alle">Alle auswählen</button>
+      <button class="knopf knopf-warn knopf-klein" id="knopf-loeschen" disabled>Ausgewählte löschen</button>
       <button class="knopf knopf-rand knopf-klein" id="knopf-csv">Als Tabelle speichern</button>
+      <span id="loesch-stand" class="hinweis" style="margin:0"></span>
     </div>
     <table class="tabelle">
       <thead><tr>
+        <th style="width:38px"><input type="checkbox" id="haken-kopf" aria-label="Alle auswählen"></th>
         <th>Code</th><th>Spitzname</th>
         <th class="rechts">Aufgaben</th><th style="width:130px">Quote</th>
         <th class="rechts">Ø Zeit</th><th class="rechts">Sterne</th>
@@ -100,7 +105,9 @@
       Namen einfügen – einen je Zeile, Komma oder Tabulator gehen auch. Für jeden entsteht
       ein Konto mit eigenem Code. Die Namen werden nur zum Drucken verwendet und
       <strong>nicht gespeichert</strong>; in der Datenbank steht am Ende nur der Code.
-      Die gedruckte Seite ist deine einzige Zuordnung – heb sie auf.
+      Die gedruckte Seite ist deine einzige Zuordnung – heb sie auf, oder sichere sie
+      gleich nach dem Erzeugen als Datei. Ohne sie lassen sich die Streifen später
+      nicht mehr mit Namen drucken.
     </p>
 
     <div style="display:grid;grid-template-columns:1fr 200px;gap:16px;align-items:start">
@@ -134,9 +141,24 @@
       </p>
       <div class="knopfreihe">
         <button class="knopf" id="knopf-drucken">Drucken oder als PDF sichern</button>
+        <button class="knopf knopf-rand" id="knopf-sichern">Zuordnung als Datei sichern</button>
         <button class="knopf knopf-rand" id="knopf-kopieren">Liste in die Zwischenablage</button>
       </div>
       <div class="streifen" id="streifen"></div>
+    </div>
+
+    <h2 style="margin-top:44px">Streifen erneut drucken</h2>
+    <p class="hinweis">
+      Die Namen stehen nicht in der Datenbank, deshalb lässt sich die Liste nicht aus
+      ihr wiederherstellen. Mit der gesicherten Zuordnung geht es trotzdem: Inhalt der
+      Datei hier einfügen, dann entstehen dieselben Streifen samt QR-Code neu.
+      Ein Name und ein Code je Zeile, getrennt durch Tabulator, Semikolon oder Komma.
+    </p>
+    <label class="feld"><span>Name und Code je Zeile</span>
+      <textarea id="in-wiederholen" placeholder="Lena Ahrens&#9;ACDE3479&#10;Jonas Beckmann&#9;KMNP4679"></textarea></label>
+    <p id="wiederholen-fehler" class="fehler" hidden></p>
+    <div class="knopfreihe">
+      <button class="knopf knopf-rand" id="knopf-wiederholen">Streifen aufbauen</button>
     </div>
   </div>
 
@@ -232,6 +254,6 @@
   </div>
 </dialog>
 
-<script type="module" src="js/lehrer.js?v=9"></script>
+<script type="module" src="js/lehrer.js?v=10"></script>
 </body>
 </html>

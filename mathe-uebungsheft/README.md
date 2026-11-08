@@ -73,11 +73,20 @@ liegt (`js/fremd/`). Es geht keine Anfrage nach außen, und im Schulnetz
 blockiert nichts.
 
 **Die Namen werden nicht gespeichert.** Sie dienen nur dazu, die Codes den
-richtigen Streifen zuzuordnen. Geht die gedruckte Seite verloren, lässt sich die
-Zuordnung nicht wiederherstellen.
+richtigen Streifen zuzuordnen. In der Datenbank steht nur der Code.
+
+Darum gibt es direkt nach dem Erzeugen den Knopf **Zuordnung als Datei sichern**.
+Diese Datei ist die einzige Verbindung zwischen Namen und Codes – heb sie auf.
+Mit ihr lassen sich die Streifen jederzeit neu drucken: Inhalt unter
+*Streifen erneut drucken* einfügen, fertig. Ohne sie bleibt nur, die Zugänge zu
+löschen und neu anzulegen.
 
 Verliert ein Schüler seinen Streifen: im Lehrerbereich unter *Schüler* die Zeile
 anklicken und **Neuen Code vergeben**. Lernstand und Sterne bleiben erhalten.
+
+Am Schuljahresende oder für einen frischen Start: unter *Schüler* die Kästchen
+links benutzen, **Alle auswählen**, dann **Ausgewählte löschen**. Damit
+verschwinden Konten und sämtliche Ergebnisse.
 
 ## Belohnung
 

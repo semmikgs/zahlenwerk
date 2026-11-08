@@ -1,10 +1,10 @@
-import { CONFIG } from './config.js?v=9';
-import { DB, speicher, kalenderwoche } from './db.js?v=9';
+import { CONFIG } from './config.js?v=10';
+import { DB, speicher, kalenderwoche } from './db.js?v=10';
 import {
   ladeKapitelliste, ladeKapitel, baueAufgabe, waehleVorlagen,
   naechsteWiederholung, auswertungNachTag, wuerfel, startwert, heute,
-} from './engine.js?v=9';
-import { feiern, danebenRums, lobText, sternenregen, funken } from './effekte.js?v=9';
+} from './engine.js?v=10';
+import { feiern, danebenRums, lobText, sternenregen, funken } from './effekte.js?v=10';
 
 const $ = (id) => document.getElementById(id);
 
@@ -163,7 +163,7 @@ async function startseite() {
   zeichneKapitel();
   zeichneDiagnose($('diagnose'), versuche, 4);
 
-  $('version').textContent = 'Version 9' + (DB.nurLokal() ? ' · Stand nur auf diesem Gerät' : '');
+  $('version').textContent = 'Version 10' + (DB.nurLokal() ? ' · Stand nur auf diesem Gerät' : '');
   zeige('start');
 
   // Wer noch keinen Spitznamen hat, wird einmal gefragt – nicht aufdringlich,

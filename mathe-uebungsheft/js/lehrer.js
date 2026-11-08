@@ -1,6 +1,6 @@
-import { DB, kalenderwoche } from './db.js?v=9';
-import { ladeKapitelliste, ladeKapitel, auswertungNachTag, haeufigsteFehler } from './engine.js?v=9';
-import { qrSvg } from './qr.js?v=9';
+import { DB, kalenderwoche } from './db.js?v=10';
+import { ladeKapitelliste, ladeKapitel, auswertungNachTag, haeufigsteFehler } from './engine.js?v=10';
+import { qrSvg } from './qr.js?v=10';
 
 const $ = (id) => document.getElementById(id);
 const zeige = (name) =>
@@ -248,6 +248,8 @@ function schuelerZeichnen() {
         const b = schuelerBilanz(p.id);
         const klasseQ = b.anzahl ? `q-${quotenstufe(b.quote, b.anzahl)}` : '';
         return `<tr class="klickbar" data-id="${p.id}">
+          <td><input type="checkbox" class="haken" data-id="${p.id}"
+                     aria-label="${p.code || 'Zugang'} auswählen"></td>
           <td class="code">${p.code || '–'}</td>
           <td>${p.spitzname || '<span style="color:var(--grau)">–</span>'}${p.spitzname_gesperrt ? ' 🔒' : ''}</td>
           <td class="rechts">${b.anzahl}</td>
@@ -258,12 +260,82 @@ function schuelerZeichnen() {
           <td>${b.schwach ? b.schwach.name : '–'}</td>
         </tr>`;
       }).join('')
-    : '<tr><td colspan="8" class="leer">Für diese Klasse gibt es noch keine Zugänge.</td></tr>';
+    : '<tr><td colspan="9" class="leer">Für diese Klasse gibt es noch keine Zugänge.</td></tr>';
+
+  $('haken-kopf').checked = false;
+  auswahlGezaehlt();
 }
 
 $('tabelle-schueler').addEventListener('click', (e) => {
+  // Das Kästchen wählt aus, es öffnet nicht das Detailfenster.
+  if (e.target.classList.contains('haken')) { auswahlGezaehlt(); return; }
   const zeile = e.target.closest('tr[data-id]');
   if (zeile) detailOeffnen(zeile.dataset.id);
+});
+
+/* ---------------- Mehrere Zugänge auf einmal ---------------- */
+
+const gewaehlteIds = () =>
+  [...document.querySelectorAll('#tabelle-schueler .haken:checked')].map((h) => h.dataset.id);
+
+function auswahlGezaehlt() {
+  const n = gewaehlteIds().length;
+  const knopf = $('knopf-loeschen');
+  knopf.disabled = n === 0;
+  knopf.textContent = n ? `${n} Ausgewählte löschen` : 'Ausgewählte löschen';
+}
+
+function alleSetzen(an) {
+  document.querySelectorAll('#tabelle-schueler .haken').forEach((h) => { h.checked = an; });
+  $('haken-kopf').checked = an;
+  auswahlGezaehlt();
+}
+
+$('haken-kopf').addEventListener('change', (e) => alleSetzen(e.target.checked));
+$('knopf-alle').addEventListener('click', () => {
+  const alle = document.querySelectorAll('#tabelle-schueler .haken');
+  const schonAlle = alle.length > 0 && gewaehlteIds().length === alle.length;
+  alleSetzen(!schonAlle);
+  $('knopf-alle').textContent = schonAlle ? 'Alle auswählen' : 'Auswahl aufheben';
+});
+
+$('knopf-loeschen').addEventListener('click', async () => {
+  const ids = gewaehlteIds();
+  if (!ids.length) return;
+
+  const codes = zustand.daten.profile
+    .filter((p) => ids.includes(p.id)).map((p) => p.code).join(', ');
+
+  if (!confirm(
+    `${ids.length} Zugänge endgültig löschen?\n\n${codes}\n\n`
+    + 'Alle Ergebnisse, Sterne und Lernstände dieser Schüler verschwinden mit. '
+    + 'Das lässt sich nicht rückgängig machen.')) return;
+
+  const knopf = $('knopf-loeschen');
+  const stand = $('loesch-stand');
+  knopf.disabled = true;
+  $('knopf-alle').disabled = true;
+
+  let fertig = 0;
+  const gescheitert = [];
+  for (const id of ids) {
+    stand.textContent = `Lösche ${fertig + 1} von ${ids.length} …`;
+    try {
+      await DB.schuelerEntfernen(id);
+      fertig++;
+    } catch (fehler) {
+      const p = zustand.daten.profile.find((x) => x.id === id);
+      gescheitert.push(`${p?.code || id}: ${fehler.message}`);
+    }
+  }
+
+  stand.textContent = gescheitert.length
+    ? `${fertig} gelöscht, ${gescheitert.length} nicht: ${gescheitert.join(' · ')}`
+    : `${fertig} Zugänge gelöscht.`;
+
+  $('knopf-alle').disabled = false;
+  $('knopf-alle').textContent = 'Alle auswählen';
+  await laden(zustand.klasse);
 });
 
 /* ---------------- Schülerdetail ---------------- */
@@ -424,6 +496,59 @@ $('schalter-qr-login').addEventListener('change', () => {
 });
 
 $('knopf-drucken').addEventListener('click', () => window.print());
+
+/* Die Zuordnung Name zu Code gibt es nur hier und jetzt – in der Datenbank
+   stehen keine Namen. Deshalb eine Datei zum Aufheben, aus der sich die
+   Streifen jederzeit wieder aufbauen lassen. */
+$('knopf-sichern').addEventListener('click', () => {
+  if (!zustand.letzteCodes.length) return;
+  const klasse = $('in-klasse').value.trim() || zustand.klasse;
+  const zeilen = [
+    `# Zahlenwerk – Zuordnung Klasse ${klasse}, angelegt am ${new Date().toLocaleDateString('de-DE')}`,
+    '# Diese Datei aufheben. Ihr Inhalt lässt sich unter "Streifen erneut drucken" einfügen.',
+    ...zustand.letzteCodes.filter((e) => e.code).map((e) => `${e.name}\t${e.code}`),
+  ];
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\uFEFF' + zeilen.join('\n')], { type: 'text/plain' }));
+  a.download = `zahlenwerk-zuordnung-${klasse}-${heuteStr()}.txt`;
+  a.click();
+  $('zugang-stand').textContent = 'Zuordnung gesichert. Heb die Datei gut auf.';
+});
+
+/* Streifen aus einer gesicherten Zuordnung neu aufbauen. */
+$('knopf-wiederholen').addEventListener('click', () => {
+  const fehlerFeld = $('wiederholen-fehler');
+  fehlerFeld.hidden = true;
+
+  const zeilen = $('in-wiederholen').value.split('\n')
+    .map((z) => z.trim())
+    .filter((z) => z && !z.startsWith('#'));
+
+  const schueler = [];
+  const krumm = [];
+  for (const zeile of zeilen) {
+    const teile = zeile.split(/[\t;,]+/).map((t) => t.trim()).filter(Boolean);
+    if (teile.length < 2) { krumm.push(zeile); continue; }
+    // Der Code steht hinten; alles davor gehört zum Namen.
+    const code = teile[teile.length - 1].toUpperCase();
+    const name = teile.slice(0, -1).join(' ');
+    if (!/^[A-Z0-9]{6,12}$/.test(code)) { krumm.push(zeile); continue; }
+    schueler.push({ name, code });
+  }
+
+  if (!schueler.length) {
+    fehlerFeld.textContent = 'Keine verwertbare Zeile gefunden. Erwartet wird: Name, dann Code.';
+    fehlerFeld.hidden = false;
+    return;
+  }
+  if (krumm.length) {
+    fehlerFeld.textContent = `${krumm.length} Zeile(n) übersprungen: ${krumm.slice(0, 3).join(' | ')}`;
+    fehlerFeld.hidden = false;
+  }
+
+  zustand.letzteCodes = schueler;
+  streifenZeichnen($('in-klasse').value.trim() || zustand.klasse, schueler);
+});
 
 $('knopf-kopieren').addEventListener('click', async () => {
   const text = zustand.letzteCodes.map((s) => `${s.name}\t${s.code}`).join('\n');
