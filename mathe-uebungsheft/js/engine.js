@@ -1,4 +1,4 @@
-import { CONFIG } from './config.js?v=10';
+import { CONFIG } from './config.js?v=11';
 
 /* ---------- Zufall mit Startwert -------------------------------------
    Gleicher Startwert = gleiche Aufgabe. Die Tageslektion ist dadurch für
@@ -51,7 +51,7 @@ const zwischenspeicher = new Map();
 
 export async function ladeKapitel(eintrag) {
   if (zwischenspeicher.has(eintrag.id)) return zwischenspeicher.get(eintrag.id);
-  const modul = await import(`../kapitel/${eintrag.datei}?v=10`);
+  const modul = await import(`../kapitel/${eintrag.datei}?v=11`);
   const kapitel = modul.default;
   zwischenspeicher.set(kapitel.id, kapitel);
   return kapitel;

@@ -1,10 +1,10 @@
-import { CONFIG } from './config.js?v=10';
-import { DB, speicher, kalenderwoche } from './db.js?v=10';
+import { CONFIG } from './config.js?v=11';
+import { DB, speicher, kalenderwoche } from './db.js?v=11';
 import {
   ladeKapitelliste, ladeKapitel, baueAufgabe, waehleVorlagen,
   naechsteWiederholung, auswertungNachTag, wuerfel, startwert, heute,
-} from './engine.js?v=10';
-import { feiern, danebenRums, lobText, sternenregen, funken } from './effekte.js?v=10';
+} from './engine.js?v=11';
+import { feiern, danebenRums, lobText, sternenregen, funken } from './effekte.js?v=11';
 
 const $ = (id) => document.getElementById(id);
 
@@ -80,8 +80,19 @@ async function los() {
     }
   }
 
-  if (DB.nutzer()) await startseite();
-  else zeige('login');
+  if (!DB.nutzer()) { zeige('login'); return; }
+
+  // Scheitert der Start trotz gültig aussehender Sitzung, ist sie verbraucht.
+  // Dann nicht die Seite zerschießen, sondern sauber zur Anmeldung zurück.
+  try {
+    await startseite();
+  } catch (fehler) {
+    console.warn('Sitzung unbrauchbar:', fehler);
+    DB.abmelden();
+    zeige('login');
+    $('login-fehler').textContent = 'Deine Anmeldung ist abgelaufen. Tipp deinen Code noch einmal ein.';
+    $('login-fehler').hidden = false;
+  }
 }
 
 $('form-login').addEventListener('submit', async (e) => {
@@ -163,7 +174,7 @@ async function startseite() {
   zeichneKapitel();
   zeichneDiagnose($('diagnose'), versuche, 4);
 
-  $('version').textContent = 'Version 10' + (DB.nurLokal() ? ' · Stand nur auf diesem Gerät' : '');
+  $('version').textContent = 'Version 11' + (DB.nurLokal() ? ' · Stand nur auf diesem Gerät' : '');
   zeige('start');
 
   // Wer noch keinen Spitznamen hat, wird einmal gefragt – nicht aufdringlich,
@@ -872,7 +883,12 @@ function zeichneAbschluss({ richtig, sternNeu, hatteSchonStern, tag, durchQuote 
 }
 
 los().catch((fehler) => {
+  // Hier landet nur noch, was vor der Anmeldung schiefgeht – praktisch
+  // ausschließlich ein Problem beim Laden der Kapiteldateien.
+  console.error(fehler);
   document.body.innerHTML = `<div class="bahn">
-    <p class="fehlermeldung">Die Kapitel konnten nicht geladen werden: ${entschaerfen(fehler.message)}</p>
-    <p class="fussnote">Die Seite muss über eine Webadresse laufen, nicht als lokale Datei.</p></div>`;
+    <h1 class="marke">Zahlenwerk</h1>
+    <p class="fehlermeldung">Die Kapitel konnten nicht geladen werden.</p>
+    <p class="fussnote">${entschaerfen(fehler.message)}</p>
+    <p class="fussnote">Lade die Seite neu. Hilft das nicht, sag deiner Lehrkraft Bescheid.</p></div>`;
 });

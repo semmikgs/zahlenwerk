@@ -1,4 +1,4 @@
-import { CONFIG, imUebungsmodus } from './config.js?v=10';
+import { CONFIG, imUebungsmodus } from './config.js?v=11';
 
 /* Kleiner Speicher-Helfer: nutzt localStorage, wenn erlaubt, sonst den
    Arbeitsspeicher. So läuft die Seite auch in strengen Browsern. */
@@ -27,7 +27,25 @@ const jsonSchreib = (k, w) => speicher.schreib(k, JSON.stringify(w));
 
 /* ---------------- Sitzung ---------------- */
 
-let sitzung = jsonLies('sitzung', null);
+const UUID_MUSTER = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/* Eine gespeicherte Sitzung kann aus einer älteren Fassung stammen – etwa aus
+   der Zeit, als noch kein Supabase hinterlegt war und die Kennung "demo-..."
+   lautete. Gegen die Datenbank gehalten ergibt so eine Kennung nur Fehler.
+   Deshalb wird beim Start geprüft, ob die Sitzung überhaupt brauchbar ist. */
+function sitzungPruefen(gespeichert) {
+  if (!gespeichert) return null;
+  if (gespeichert.gast) return gespeichert;            // bleibt ohnehin lokal
+  if (imUebungsmodus()) return gespeichert;            // keine Datenbank im Spiel
+  const brauchbar = UUID_MUSTER.test(String(gespeichert.id || '')) && !!gespeichert.token;
+  if (!brauchbar) {
+    speicher.loesche('sitzung');
+    return null;
+  }
+  return gespeichert;
+}
+
+let sitzung = sitzungPruefen(jsonLies('sitzung', null));
 
 const heute = () => new Date().toISOString().slice(0, 10);
 

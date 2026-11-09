@@ -1,6 +1,6 @@
-import { DB, kalenderwoche } from './db.js?v=10';
-import { ladeKapitelliste, ladeKapitel, auswertungNachTag, haeufigsteFehler } from './engine.js?v=10';
-import { qrSvg } from './qr.js?v=10';
+import { DB, kalenderwoche } from './db.js?v=11';
+import { ladeKapitelliste, ladeKapitel, auswertungNachTag, haeufigsteFehler } from './engine.js?v=11';
+import { qrSvg } from './qr.js?v=11';
 
 const $ = (id) => document.getElementById(id);
 const zeige = (name) =>
@@ -69,8 +69,17 @@ const zustand = {
       + 'dann funktioniert der Lehrerbereich.';
   }
 
-  if (DB.nutzer()?.rolle === 'lehrer') starten();
-  else zeige('login');
+  if (DB.nutzer()?.rolle === 'lehrer') {
+    try {
+      await starten();
+    } catch (fehler) {
+      console.warn('Sitzung unbrauchbar:', fehler);
+      DB.abmelden();
+      zeige('login');
+      $('login-fehler').textContent = 'Die Anmeldung ist abgelaufen. Bitte neu anmelden.';
+      $('login-fehler').hidden = false;
+    }
+  } else zeige('login');
 })();
 
 $('form-login').addEventListener('submit', async (e) => {
