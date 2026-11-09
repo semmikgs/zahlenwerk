@@ -1,6 +1,6 @@
-import { DB, kalenderwoche } from './db.js?v=13';
-import { ladeKapitelliste, ladeKapitel, auswertungNachTag, haeufigsteFehler } from './engine.js?v=13';
-import { qrSvg } from './qr.js?v=13';
+import { DB, kalenderwoche } from './db.js?v=14';
+import { ladeKapitelliste, ladeKapitel, auswertungNachTag, haeufigsteFehler } from './engine.js?v=14';
+import { qrSvg } from './qr.js?v=14';
 
 const $ = (id) => document.getElementById(id);
 const zeige = (name) =>

@@ -401,6 +401,9 @@ body::after{
    auf dem Handy ohne Scrollen bedienbar. */
 .antworten.zweispaltig{grid-template-columns:1fr 1fr;gap:9px}
 .antworten.zweispaltig .antwort{padding:13px 8px;font-size:21px}
+/* In einem Knopf steht die Wurzel mittig und darf nicht über den Rand wachsen. */
+.antwort .wurzel{vertical-align:-.1em}
+.antwort .wurzel-inhalt{padding-top:.1em}
 
 /* Lange Ergebnisse passen nicht nebeneinander – dann wenigstens flacher,
    damit die Liste nicht über den Bildschirmrand läuft. */
@@ -409,6 +412,7 @@ body::after{
 .antworten.gedraengt + .knopf-pruefen{min-height:50px;margin-top:11px}
 .antwort{
   position:relative;min-height:var(--tipp);padding:13px 18px;
+  display:flex;align-items:center;justify-content:center;
   background:linear-gradient(180deg, var(--karte-hoch), var(--karte));
   border:1.5px solid var(--kante);border-radius:15px;
   font:700 22px var(--rund);color:var(--licht);text-align:center;cursor:pointer;

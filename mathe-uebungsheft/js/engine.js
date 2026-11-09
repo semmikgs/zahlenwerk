@@ -1,4 +1,4 @@
-import { CONFIG } from './config.js?v=13';
+import { CONFIG } from './config.js?v=14';
 
 /* ---------- Zufall mit Startwert -------------------------------------
    Gleicher Startwert = gleiche Aufgabe. Die Tageslektion ist dadurch für
@@ -51,7 +51,7 @@ const zwischenspeicher = new Map();
 
 export async function ladeKapitel(eintrag) {
   if (zwischenspeicher.has(eintrag.id)) return zwischenspeicher.get(eintrag.id);
-  const modul = await import(`../kapitel/${eintrag.datei}?v=13`);
+  const modul = await import(`../kapitel/${eintrag.datei}?v=14`);
   const kapitel = modul.default;
   zwischenspeicher.set(kapitel.id, kapitel);
   return kapitel;
@@ -73,17 +73,21 @@ export function baueAufgabe(kapitel, vorlage, seed) {
     frage: roh.frage,
     satz: roh.satz || '',
     loesung: String(roh.loesung),
+    loesungAnzeige: roh.anzeige || '',
     weg: roh.weg || '',
   };
 
   if (vorlage.typ === 'mc') {
+    // "anzeige" ist freiwillig: Damit kann ein Kapitel eine Antwort als
+    // Auszeichnung liefern, etwa ein gezeichnetes Wurzelzeichen. Fehlt sie,
+    // wird der Wert als reiner Text dargestellt.
     const ablenker = [];
     const gesehen = new Set([String(roh.loesung)]);
     for (const a of roh.ablenker) {
       const wert = String(a.wert);
       if (gesehen.has(wert)) continue;
       gesehen.add(wert);
-      ablenker.push({ wert, fehler: a.fehler });
+      ablenker.push({ wert, fehler: a.fehler, anzeige: a.anzeige });
     }
     // Auf mindestens 5 Optionen auffüllen, damit Raten sich nicht lohnt.
     let schutz = 0;
@@ -97,7 +101,7 @@ export function baueAufgabe(kapitel, vorlage, seed) {
       ablenker.push({ wert, fehler: 'rechenfehler' });
     }
     const optionen = r.mische([
-      { wert: String(roh.loesung), fehler: null },
+      { wert: String(roh.loesung), fehler: null, anzeige: roh.anzeige },
       ...ablenker.slice(0, 5),
     ]);
     aufgabe.optionen = optionen;

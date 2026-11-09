@@ -15,6 +15,9 @@ const w = (inhalt) =>
   + '<path d="M0.6 12.4 L3.1 12.4 L5.6 20.8 L9.7 0.9"/></svg>'
   + `<span class="wurzel-inhalt">${inhalt}</span></span>`;
 
+// Eine Zahl vor der Wurzel, wie sie beim teilweisen Ziehen entsteht.
+const vw = (vorn, rest) => `${vorn}${w(rest)}`;
+
 // Quadratzahlen, die eine neunte Klasse im Kopf haben sollte.
 const KLEIN = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
 const GROSS = [16, 17, 18, 19, 20, 21, 22, 25, 30];
@@ -366,21 +369,47 @@ export default {
           [32, 4, 2], [45, 3, 5], [48, 4, 3], [50, 5, 2], [72, 6, 2],
           [75, 5, 3], [98, 7, 2],
         ]);
+
+        // Der Wert ist die Schreibweise für den Vergleich, die Anzeige die
+        // gezeichnete Form mit Radikand unter dem Strich.
+        const paar = (v, rst, fehler) => ({
+          wert: `${v}√${rst}`, anzeige: vw(v, rst), fehler,
+        });
+
+        // Unter der Wurzel darf bei einem Ablenker keine Quadratzahl stehen:
+        // 2√4 verrät sich auf den ersten Blick und taugt nicht als Köder.
+        const istQuadrat = (n) => Number.isInteger(Math.sqrt(n));
+
+        const kandidaten = [
+          [vorn * vorn, rest, 'faktor-nicht-gewurzelt'],
+          vorn !== rest ? [rest, vorn, 'faktoren-vertauscht'] : null,
+          [vorn + 1, rest, 'rechenfehler'],
+          [vorn, rest + 1, 'rechenfehler'],
+          [vorn, rest * 2, 'rechenfehler'],
+          vorn - 1 >= 2 ? [vorn - 1, rest, 'rechenfehler'] : null,
+          [vorn + 2, rest, 'rechenfehler'],
+          [vorn + 3, rest, 'rechenfehler'],
+        ].filter(Boolean);
+
+        const belegt = new Set([`${vorn}√${rest}`]);
+        const ablenker = [];
+        for (const [v, rst, fehler] of kandidaten) {
+          if (ablenker.length >= 5) break;
+          if (istQuadrat(rst)) continue;
+          const schluessel = `${v}√${rst}`;
+          if (belegt.has(schluessel)) continue;
+          belegt.add(schluessel);
+          ablenker.push(paar(v, rst, fehler));
+        }
+        // Reicht es nicht, hilft die gar nicht gezogene Zahl aus.
+        if (ablenker.length < 5) ablenker.push({ wert: `${zahl}`, fehler: 'rechenfehler' });
+
         return {
           frage: `${w(zahl)} =`,
           loesung: `${vorn}√${rest}`,
+          anzeige: vw(vorn, rest),
           weg: `${zahl} = ${vorn * vorn} · ${rest}, und √${vorn * vorn} = ${vorn}.`,
-          ablenker: [
-            { wert: `${vorn * vorn}√${rest}`, fehler: 'faktor-nicht-gewurzelt' },
-            { wert: `${vorn}√${rest * 2}`, fehler: 'rechenfehler' },
-            { wert: `${vorn + 1}√${rest}`, fehler: 'rechenfehler' },
-            { wert: `${vorn}√${rest + 1}`, fehler: 'rechenfehler' },
-            // Vertauschen ergibt bei 2√2 oder 3√3 dieselbe Antwort –
-            // dann stattdessen die gar nicht gezogene Zahl anbieten.
-            vorn === rest
-              ? { wert: `${zahl}`, fehler: 'rechenfehler' }
-              : { wert: `${rest}√${vorn}`, fehler: 'faktoren-vertauscht' },
-          ],
+          ablenker,
         };
       },
     },

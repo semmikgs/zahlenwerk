@@ -1,10 +1,10 @@
-import { CONFIG } from './config.js?v=13';
-import { DB, speicher, kalenderwoche } from './db.js?v=13';
+import { CONFIG } from './config.js?v=14';
+import { DB, speicher, kalenderwoche } from './db.js?v=14';
 import {
   ladeKapitelliste, ladeKapitel, baueAufgabe, waehleVorlagen,
   naechsteWiederholung, auswertungNachTag, wuerfel, startwert, heute,
-} from './engine.js?v=13';
-import { feiern, danebenRums, lobText, sternenregen, funken } from './effekte.js?v=13';
+} from './engine.js?v=14';
+import { feiern, danebenRums, lobText, sternenregen, funken } from './effekte.js?v=14';
 
 const $ = (id) => document.getElementById(id);
 
@@ -174,7 +174,7 @@ async function startseite() {
   zeichneKapitel();
   zeichneDiagnose($('diagnose'), versuche, 4);
 
-  $('version').textContent = 'Version 13' + (DB.nurLokal() ? ' · Stand nur auf diesem Gerät' : '');
+  $('version').textContent = 'Version 14' + (DB.nurLokal() ? ' · Stand nur auf diesem Gerät' : '');
   zeige('start');
 
   // Wer noch keinen Spitznamen hat, wird einmal gefragt – nicht aufdringlich,
@@ -645,7 +645,9 @@ function zeichneAufgabe() {
       const b = document.createElement('button');
       b.type = 'button';
       b.className = 'antwort';
-      b.textContent = anz(option.wert);
+      // Nur die vom Kapitel gelieferte Anzeige darf Auszeichnung enthalten;
+      // alles andere geht als entschärfter Text hinein.
+      b.innerHTML = option.anzeige || entschaerfen(anz(option.wert));
       b.dataset.wert = option.wert;
       b.addEventListener('click', () => waehle(option, b));
       felder.appendChild(b);
@@ -726,7 +728,12 @@ function pruefe(richtig, fehler, knopf) {
   const feld = $('rueckmeldung');
   feld.className = `rueckmeldung ${richtig ? 'ja' : 'nein'}`;
   feld.hidden = false;
-  $('rueckmeldung-titel').textContent = richtig ? lobText(l.serie) : `Richtig wäre ${anz(a.loesung)}`;
+  if (richtig) {
+    $('rueckmeldung-titel').textContent = lobText(l.serie);
+  } else {
+    $('rueckmeldung-titel').innerHTML =
+      `Richtig wäre ${a.loesungAnzeige || entschaerfen(anz(a.loesung))}`;
+  }
   $('rueckmeldung-text').textContent = richtig
     ? (a.weg || '')
     : (fehler && zustand.fehlerNamen[fehler]

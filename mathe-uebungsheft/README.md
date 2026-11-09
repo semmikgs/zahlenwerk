@@ -156,6 +156,7 @@ Eine Kapiteldatei enthält vier Dinge:
 | `grundlagen` | Erklärungen, die über „Ich brauche die Erklärung" aufklappen |
 | `vorlagen` | Aufgabengeneratoren; `erzeuge(r)` liefert bei jedem Aufruf neue Zahlen |
 | `tagNamen` | Klartext für jede Teilkompetenz, erscheint in der Auswertung |
+| `anzeige` | freiwillig: Antwort als Auszeichnung statt als reiner Text |
 | `fehlerNamen` | Klartext für jeden Denkfehler hinter einer falschen Antwort |
 
 Eine Vorlage sieht so aus:
@@ -182,6 +183,11 @@ Eine Vorlage sieht so aus:
   },
 }
 ```
+
+Soll eine Antwort nicht als reiner Text erscheinen – etwa ein gezeichnetes
+Wurzelzeichen mit Radikand darunter –, liefert die Vorlage dazu ein Feld
+`anzeige`. Es gilt für die richtige Lösung wie für jeden Ablenker. Ohne dieses
+Feld wird der Wert entschärft als Text gesetzt.
 
 Jeder Ablenker trägt den Denkfehler, der zu ihm führt. Genau daraus entsteht
 später der Satz „Vorzeichenregel verdreht – 23 mal in dieser Klasse" im
