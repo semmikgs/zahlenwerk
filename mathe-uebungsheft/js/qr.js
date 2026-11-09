@@ -1,4 +1,4 @@
-import qrcode from './fremd/qrcode.mjs?v=12';
+import qrcode from './fremd/qrcode.mjs?v=13';
 
 /* QR-Code als SVG.
 

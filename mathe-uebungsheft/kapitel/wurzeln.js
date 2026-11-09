@@ -5,7 +5,15 @@
    ist, was noch unter der Wurzel steht. In den Antwortknöpfen steht reiner
    Text, dort genügt das Zeichen allein. */
 
-const w = (inhalt) => `√<span class="wurzel">${inhalt}</span>`;
+/* Das Wurzelzeichen aus der Schriftart endet auf einer anderen Höhe als ein
+   Überstrich aus CSS – der Haken hing dann unter dem Strich in der Luft.
+   Deshalb wird es gezeichnet: Der Pfad endet genau oben rechts, dort setzt
+   der Strich über dem Radikanden an. Beides wächst mit der Schriftgröße. */
+const w = (inhalt) =>
+  '<span class="wurzel">'
+  + '<svg class="wurzel-zeichen" viewBox="0 0 10 22" preserveAspectRatio="none" aria-hidden="true">'
+  + '<path d="M0.6 12.4 L3.1 12.4 L5.6 20.8 L9.7 0.9"/></svg>'
+  + `<span class="wurzel-inhalt">${inhalt}</span></span>`;
 
 // Quadratzahlen, die eine neunte Klasse im Kopf haben sollte.
 const KLEIN = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
