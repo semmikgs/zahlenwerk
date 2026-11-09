@@ -16,6 +16,10 @@
     {
       "id": "gleichungen",
       "datei": "gleichungen.js"
+    },
+    {
+      "id": "wurzeln",
+      "datei": "wurzeln.js"
     }
   ]
 }

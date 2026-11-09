@@ -31,7 +31,7 @@ Zugangscode. Ein Feld, kein Passwort, keine Anmeldung bei Supabase.
 | `bilder/` | QR-Codes zum Teilen |
 
 Bisherige Kapitel: Rationale Zahlen, Prozentrechnung, Terme zusammenfassen,
-Gleichungen lösen.
+Gleichungen lösen, Wurzeln.
 
 Ein Stern pro Tag, fünf Sterne ergeben den Wochenstern. Für den Tagesstern
 reicht eines von beidem: drei Viertel richtig oder fünf Minuten geübt.

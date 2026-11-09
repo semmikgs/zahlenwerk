@@ -1,13 +1,14 @@
-import { wuerfel, startwert, baueAufgabe } from './js/engine.js?v=11';
+import { wuerfel, startwert, baueAufgabe } from './js/engine.js?v=12';
 import rz from './kapitel/rationale-zahlen.js';
 import pz from './kapitel/prozent.js';
 import te from './kapitel/terme.js';
 import gl from './kapitel/gleichungen.js';
+import wz from './kapitel/wurzeln.js';
 
 let fehler = 0;
 const meld = (m) => { console.log('  PROBLEM: ' + m); fehler++; };
 
-for (const kapitel of [rz, pz, te, gl]) {
+for (const kapitel of [rz, pz, te, gl, wz]) {
   console.log(`\n== ${kapitel.titel} (${kapitel.vorlagen.length} Vorlagen) ==`);
   const grundlagenIds = new Set(kapitel.grundlagen.map(g => g.id));
 

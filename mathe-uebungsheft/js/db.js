@@ -1,4 +1,4 @@
-import { CONFIG, imUebungsmodus } from './config.js?v=11';
+import { CONFIG, imUebungsmodus } from './config.js?v=12';
 
 /* Kleiner Speicher-Helfer: nutzt localStorage, wenn erlaubt, sonst den
    Arbeitsspeicher. So läuft die Seite auch in strengen Browsern. */

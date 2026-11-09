@@ -567,6 +567,16 @@ dialog::backdrop{background:rgba(4,7,20,.72)}
 }
 .nowrap{white-space:nowrap}
 
+/* Wurzel: Der Überstrich zeigt, was noch unter dem Zeichen steht.
+   Ohne ihn ist bei √16/9 nicht zu sehen, ob der Nenner dazugehört. */
+.wurzel{
+  display:inline-block;
+  border-top:.09em solid currentColor;
+  padding:.1em .22em 0 .12em;
+  margin-left:-.06em;
+  white-space:nowrap;
+}
+
 /* ---------------- Wochenaufgabe im Dialog ---------------- */
 
 .wa-text{

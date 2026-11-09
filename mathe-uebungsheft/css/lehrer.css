@@ -182,3 +182,12 @@ dialog::backdrop{background:rgba(18,43,87,.4)}
   .schritt{grid-template-columns:1fr}
   .streifen{grid-template-columns:1fr}
 }
+
+/* Wurzelzeichen mit Überstrich, gleiche Regel wie in der Schüler-App. */
+.wurzel{
+  display:inline-block;
+  border-top:.09em solid currentColor;
+  padding:.1em .22em 0 .12em;
+  margin-left:-.06em;
+  white-space:nowrap;
+}
