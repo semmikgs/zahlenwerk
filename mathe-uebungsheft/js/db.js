@@ -1,4 +1,4 @@
-import { CONFIG, imUebungsmodus } from './config.js?v=15';
+import { CONFIG, imUebungsmodus } from './config.js?v=16';
 
 /* Kleiner Speicher-Helfer: nutzt localStorage, wenn erlaubt, sonst den
    Arbeitsspeicher. So läuft die Seite auch in strengen Browsern. */
@@ -293,9 +293,12 @@ export const DB = {
 
   /* ---------------- Lobby ---------------- */
 
-  async lobbyLaden() {
+  /* Ohne Angabe die eigene Klasse. Die Lehrkraft gibt eine mit, sie sieht
+     laut Zugriffsregel alle. */
+  async lobbyLaden(fuerKlasse) {
     if (!sitzung || this.nurLokal()) return [];
-    const klasse = sitzung.klasse ? `&klasse=eq.${encodeURIComponent(sitzung.klasse)}` : '';
+    const gewaehlt = fuerKlasse ?? sitzung.klasse;
+    const klasse = gewaehlt ? `&klasse=eq.${encodeURIComponent(gewaehlt)}` : '';
     return await rest(`lobby?select=*${klasse}&order=lauf.desc,sterne_gesamt.desc&limit=60`) || [];
   },
 

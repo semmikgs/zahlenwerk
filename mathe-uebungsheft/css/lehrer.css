@@ -215,3 +215,73 @@ dialog::backdrop{background:rgba(18,43,87,.4)}
   line-height:1.1;
   white-space:nowrap;
 }
+
+/* --- Schülersicht ---------------------------------------------------
+   Ein Ausschnitt der Schüler-App im Lehrerbereich. Die Farben stehen hier
+   noch einmal, weil beide Seiten eigene Stylesheets haben: der
+   Lehrerbereich hell, die Schüler-App dunkel. Die Klassennamen sind
+   dieselben wie in css/stil.css, die Auszeichnung kommt aus
+   js/anzeige.js – inhaltlich laufen die beiden also nicht auseinander. */
+.schuelersicht{
+  --karte:#1D2650;
+  --kante:#313C75;
+  --puls:#7B6CFF;
+  --stern:#FFC247;
+  --licht:#EEF1FF;
+  --nebel:#6C76A8;
+  --rund: ui-rounded, "SF Pro Rounded", "Segoe UI Variable Display", "Segoe UI", Verdana, sans-serif;
+
+  max-width:520px;padding:22px 20px 26px;border-radius:20px;
+  background:
+    radial-gradient(90% 60% at 50% -10%, rgba(123,108,255,.26), transparent 70%),
+    #0D1430;
+  color:var(--licht);
+  font-variant-numeric:tabular-nums;
+}
+.sicht-kopf{margin:0 0 4px;font:700 19px/1.2 var(--sans);letter-spacing:-.02em}
+.sicht-spalten{
+  display:flex;justify-content:flex-end;gap:10px;
+  margin:0 0 12px;font-size:11px;color:var(--nebel);
+}
+.sicht-spalten span{flex:0 0 50px;text-align:right}
+
+.schuelersicht .rangliste{list-style:none;margin:0;padding:0}
+.schuelersicht .rangliste li{
+  display:flex;align-items:center;gap:13px;
+  padding:11px 14px;margin-bottom:7px;
+  background:var(--karte);border:1.5px solid transparent;border-radius:13px;
+}
+.schuelersicht .rangliste li:nth-child(1) .rang-platz{color:var(--stern)}
+.schuelersicht .rang-platz{flex:0 0 24px;text-align:center;font:700 15px var(--rund);color:var(--nebel)}
+.schuelersicht .rang-name{
+  flex:1;min-width:0;font-weight:600;font-size:16px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.schuelersicht .rang-komet{display:inline-block;vertical-align:-.15em;margin-left:3px}
+.schuelersicht .rang-komet svg{width:17px;height:12px}
+.schuelersicht .rang-lauf,
+.schuelersicht .rang-sterne{
+  flex:0 0 50px;display:flex;align-items:center;justify-content:flex-end;
+  gap:4px;font:700 15px var(--rund);
+}
+.schuelersicht .rang-lauf{color:#FF9A4D}
+.schuelersicht .rang-lauf.kalt{color:var(--nebel)}
+.schuelersicht .rang-sterne{color:var(--stern)}
+.schuelersicht .rangliste-leer{
+  color:var(--nebel);font-size:14.5px;padding:14px;
+  background:var(--karte);border-radius:13px;list-style:none;
+}
+
+/* Für die Tafel: alles größer, damit es aus der letzten Reihe lesbar ist. */
+.schuelersicht.gross{max-width:none;padding:30px 28px}
+.schuelersicht.gross .sicht-kopf{font-size:27px}
+.schuelersicht.gross .sicht-spalten{font-size:15px}
+.schuelersicht.gross .sicht-spalten span{flex-basis:92px}
+.schuelersicht.gross .rangliste li{padding:16px 20px;margin-bottom:10px;gap:18px}
+.schuelersicht.gross .rang-platz{flex-basis:38px;font-size:24px}
+.schuelersicht.gross .rang-name{font-size:26px}
+.schuelersicht.gross .rang-komet svg{width:26px;height:18px}
+.schuelersicht.gross .rang-lauf,
+.schuelersicht.gross .rang-sterne{flex-basis:92px;font-size:25px;gap:7px}
+.schuelersicht.gross .rang-lauf svg,
+.schuelersicht.gross .rang-sterne svg{width:24px;height:24px}

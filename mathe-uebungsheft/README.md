@@ -56,6 +56,10 @@ Und in der Datenbank stehen nur Codes und Übungsergebnisse, keine Namen.
 
 ## Zugänge für die Klasse
 
+Im Reiter *Schülersicht* steht die Rangliste so, wie die Schüler sie auf dem
+Handy sehen – live aus der Datenbank, aber mit allen Zeilen statt nur den
+ersten sechs. **Groß für die Tafel** vergrößert sie für das ActiveBoard.
+
 Im Lehrerbereich unter *Zugänge*: Namensliste einfügen, Klasse eintragen,
 **Zugänge erzeugen**. Für jeden Namen entsteht ein Konto mit achtstelligem Code.
 Die Codes erscheinen als Streifen zum Ausschneiden; über *Drucken* lässt sich
@@ -243,6 +247,7 @@ css/lehrer.css                 Aussehen des Lehrerbereichs
 js/config.js                   Zugangsdaten und Kursparameter
 js/db.js                       Speichern, Laden, Anmeldung
 js/engine.js                   Zufallszahlen, Aufgabenbau, Wiederholung, Auswertung
+js/anzeige.js                  Rangliste, Flamme und Sterne für beide Seiten
 js/qr.js                       QR-Codes für die Streifen
 js/fremd/                      übernommener Fremdcode mit Herkunftsangabe
 js/app.js                      Ablauf der Schüler-App

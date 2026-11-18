@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title>Zahlenwerk – Lehrerbereich</title>
-<link rel="stylesheet" href="css/lehrer.css?v=15">
+<link rel="stylesheet" href="css/lehrer.css?v=16">
 </head>
 <body>
 
@@ -40,6 +40,7 @@
     <nav class="reiter" id="reiter">
       <button data-blatt="ueberblick" aria-current="true">Überblick</button>
       <button data-blatt="schueler">Schüler</button>
+      <button data-blatt="sicht">Schülersicht</button>
       <button data-blatt="zugaenge">Zugänge</button>
       <button data-blatt="wochenaufgabe">Wochenaufgabe</button>
       <button data-blatt="kapitel">Kapitel</button>
@@ -96,6 +97,27 @@
       </tr></thead>
       <tbody id="tabelle-schueler"></tbody>
     </table>
+  </div>
+
+  <!-- ---------- Schülersicht ---------- -->
+  <div class="bahn blatt" id="blatt-sicht" hidden>
+    <h2>So sehen es die Schüler</h2>
+    <p class="hinweis">
+      Die Rangliste aus der Schüler-App, live aus der Datenbank. Auf dem Handy sehen
+      die Schüler die ersten sechs Plätze und ihre eigene Zeile; hier stehen alle.
+      Gut geeignet, um sie zu Stundenbeginn an die Tafel zu werfen.
+    </p>
+    <div class="knopfreihe nicht-drucken">
+      <button class="knopf knopf-rand knopf-klein" id="knopf-sicht-neu">Neu laden</button>
+      <button class="knopf knopf-rand knopf-klein" id="knopf-sicht-gross">Groß für die Tafel</button>
+      <span id="sicht-stand" class="hinweis" style="margin:0"></span>
+    </div>
+
+    <div class="schuelersicht" id="schuelersicht">
+      <p class="sicht-kopf"><span id="sicht-klasse"></span></p>
+      <p class="sicht-spalten"><span>Tage am Stück</span><span>Tage gesamt</span></p>
+      <ul class="rangliste" id="sicht-rangliste"></ul>
+    </div>
   </div>
 
   <!-- ---------- Zugänge ---------- -->
@@ -254,6 +276,6 @@
   </div>
 </dialog>
 
-<script type="module" src="js/lehrer.js?v=15"></script>
+<script type="module" src="js/lehrer.js?v=16"></script>
 </body>
 </html>

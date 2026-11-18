@@ -1,8 +1,9 @@
-import { DB, kalenderwoche } from './db.js?v=15';
+import { DB, kalenderwoche } from './db.js?v=16';
 import {
   ladeKapitelliste, ladeKapitel, auswertungNachTag, haeufigsteFehler, laufAusSternen,
-} from './engine.js?v=15';
-import { qrSvg } from './qr.js?v=15';
+} from './engine.js?v=16';
+import { qrSvg } from './qr.js?v=16';
+import { ranglisteZeilen } from './anzeige.js?v=16';
 
 const $ = (id) => document.getElementById(id);
 const zeige = (name) =>
@@ -144,6 +145,7 @@ async function laden(klasse) {
   if (!$('wa-klasse').value.trim()) $('wa-klasse').value = klasse;
   zustand.daten = await DB.klasseLaden(klasse);
   ueberblickZeichnen();
+  schuelersichtZeichnen();
   schuelerZeichnen();
   await wochenaufgabenZeichnen();
 }
@@ -349,6 +351,42 @@ $('knopf-loeschen').addEventListener('click', async () => {
   $('knopf-alle').disabled = false;
   $('knopf-alle').textContent = 'Alle auswählen';
   await laden(zustand.klasse);
+});
+
+/* ---------------- Schülersicht ---------------- */
+
+/* Zeigt die Rangliste genau so, wie die Schüler sie auf dem Handy sehen –
+   dieselbe Zeichnung aus js/anzeige.js, nur ohne Begrenzung auf sechs Zeilen. */
+async function schuelersichtZeichnen() {
+  if (!zustand.klasse) return;
+  const ziel = $('sicht-rangliste');
+  $('sicht-klasse').textContent = `Rangliste Klasse ${zustand.klasse}`;
+
+  let liste = [];
+  try {
+    liste = await DB.lobbyLaden(zustand.klasse);
+  } catch (fehler) {
+    $('sicht-stand').textContent = fehler.message;
+    return;
+  }
+
+  zustand.lobby = liste;
+  ziel.innerHTML = liste.length
+    ? ranglisteZeilen(liste, 0)
+    : '<li class="rangliste-leer">In dieser Klasse hat noch niemand einen Stern geholt.</li>';
+
+  const brennen = liste.filter((e) => (e.lauf ?? 0) > 0).length;
+  $('sicht-stand').textContent = liste.length
+    ? `${brennen} von ${liste.length} sind gerade im Lauf.`
+    : '';
+}
+
+$('knopf-sicht-neu').addEventListener('click', () => schuelersichtZeichnen());
+
+$('knopf-sicht-gross').addEventListener('click', () => {
+  const feld = $('schuelersicht');
+  const gross = feld.classList.toggle('gross');
+  $('knopf-sicht-gross').textContent = gross ? 'Wieder klein' : 'Groß für die Tafel';
 });
 
 /* ---------------- Schülerdetail ---------------- */
