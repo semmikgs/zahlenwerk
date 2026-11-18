@@ -1,4 +1,4 @@
-import { CONFIG, imUebungsmodus } from './config.js?v=14';
+import { CONFIG, imUebungsmodus } from './config.js?v=15';
 
 /* Kleiner Speicher-Helfer: nutzt localStorage, wenn erlaubt, sonst den
    Arbeitsspeicher. So läuft die Seite auch in strengen Browsern. */
@@ -296,7 +296,7 @@ export const DB = {
   async lobbyLaden() {
     if (!sitzung || this.nurLokal()) return [];
     const klasse = sitzung.klasse ? `&klasse=eq.${encodeURIComponent(sitzung.klasse)}` : '';
-    return await rest(`lobby?select=*${klasse}&order=sterne_woche.desc&limit=60`) || [];
+    return await rest(`lobby?select=*${klasse}&order=lauf.desc,sterne_gesamt.desc&limit=60`) || [];
   },
 
   async spitznameSetzen(name) {

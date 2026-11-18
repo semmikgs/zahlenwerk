@@ -1,4 +1,4 @@
-import { CONFIG } from './config.js?v=14';
+import { CONFIG } from './config.js?v=15';
 
 /* ---------- Zufall mit Startwert -------------------------------------
    Gleicher Startwert = gleiche Aufgabe. Die Tageslektion ist dadurch für
@@ -51,7 +51,7 @@ const zwischenspeicher = new Map();
 
 export async function ladeKapitel(eintrag) {
   if (zwischenspeicher.has(eintrag.id)) return zwischenspeicher.get(eintrag.id);
-  const modul = await import(`../kapitel/${eintrag.datei}?v=14`);
+  const modul = await import(`../kapitel/${eintrag.datei}?v=15`);
   const kapitel = modul.default;
   zwischenspeicher.set(kapitel.id, kapitel);
   return kapitel;
@@ -208,6 +208,37 @@ export function haeufigsteFehler(versuche, fehlerNamen) {
   return [...map.entries()]
     .map(([fehler, anzahl]) => ({ fehler, anzahl, name: fehlerNamen[fehler] || fehler }))
     .sort((a, b) => b.anzahl - a.anzahl);
+}
+
+/**
+ * Lauf: Tage am Stück mit Stern.
+ *
+ * Das Ziel lautet fünfmal pro Woche, deshalb brechen Samstag und Sonntag den
+ * Lauf nicht – ein Werktag ohne Stern tut das. Der heutige Tag bricht ebenfalls
+ * nichts, er läuft ja noch.
+ *
+ * Dieselbe Rechnung steht in der Lobby-View der Datenbank. Hier wird sie für
+ * den eigenen Stand und für die Lehreransicht gebraucht, wo die Sterne ohnehin
+ * schon geladen sind.
+ */
+export function laufAusSternen(tage) {
+  const menge = new Set(tage);
+  const heuteStr = heute();
+  // Mitternacht in UTC, passend zu den gespeicherten Datumswerten.
+  const zeiger = new Date(`${heuteStr}T00:00:00Z`);
+  let lauf = 0;
+
+  for (let i = 0; i < 400; i++) {
+    const tag = zeiger.toISOString().slice(0, 10);
+    const wochentag = zeiger.getUTCDay();          // 0 = Sonntag, 6 = Samstag
+    const wochenende = wochentag === 0 || wochentag === 6;
+
+    if (menge.has(tag)) lauf++;
+    else if (tag !== heuteStr && !wochenende) break;
+
+    zeiger.setUTCDate(zeiger.getUTCDate() - 1);
+  }
+  return lauf;
 }
 
 export { heute, tageDazu };

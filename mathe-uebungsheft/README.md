@@ -19,7 +19,9 @@ funktioniert nicht, weil Browser lokale Dateien nicht als Module laden.
 `setup/supabase.sql` im SQL-Editor von Supabase einmal komplett ausführen.
 Wer eine ältere Fassung eingespielt hat, führt zusätzlich
 `setup/rechte-nachtragen.sql` aus – sonst meldet die Edge Function später
-„permission denied for table profil".
+„permission denied for table profil". Wer schon vor Version 15 eingerichtet
+hat, führt zusätzlich `setup/lauf-nachtragen.sql` aus; das ergänzt den Lauf in
+der Rangliste.
 Das legt das Schema `zahlenwerk` an – getrennt von den anderen Schultools in
 derselben Instanz.
 
@@ -113,6 +115,24 @@ keine Sterne.
 Fünf Sterne in einer Kalenderwoche ergeben den Wochenstern. Wochenendtage zählen
 mit, sind also Joker – wer in der Woche einen Tag verpasst, kann ihn nachholen.
 
+## Lauf
+
+Der Lauf zählt die Tage am Stück mit Stern. Weil das Ziel fünfmal pro Woche
+lautet, brechen Samstag und Sonntag ihn nicht – nur ein Werktag ohne Stern tut
+das. Der laufende Tag bricht ebenfalls nichts; wer heute noch nicht geübt hat,
+behält seinen Lauf bis Mitternacht.
+
+Die Rangliste auf der Startseite zeigt deshalb drei Dinge je Schüler: den
+Spitznamen, den Lauf (Flamme) und die Gesamtzahl geübter Tage (Stern).
+Sortiert wird nach dem Lauf, bei Gleichstand nach den Gesamttagen. Wer
+aussetzt, sieht seine Flamme erlöschen, während die Gesamtzahl bleibt – der
+Abstand nach oben ist damit auf einen Blick erkennbar und aufholbar.
+
+Dieselbe Rechnung steht zweimal im Code: in der Lobby-View der Datenbank für
+die Mitschüler und in `js/engine.js` für den eigenen Stand und die
+Lehreransicht. Ein Prüflauf vergleicht beide an sechzig zufälligen
+Übungsmustern.
+
 In der Rangliste erzählt das Sternsymbol die ganze Woche:
 
 | Symbol | Bedeutung |
@@ -121,6 +141,9 @@ In der Rangliste erzählt das Sternsymbol die ganze Woche:
 | Gefüllter Stern mit Schweif | Wochenstern und Wochenaufgabe |
 | Hohler Stern mit Schweif | nur die Wochenaufgabe gelöst |
 | Hohler Stern | noch unterwegs |
+
+Dieses Zeichen steht in der Rangliste klein hinter dem Namen. Die beiden Zahlen
+daneben sind Lauf und Gesamttage.
 
 Sortiert wird nach Sternen, nicht nach Fehlerquote. Wer übt, kommt nach oben –
 auch wer viel falsch macht. Das ist Absicht.

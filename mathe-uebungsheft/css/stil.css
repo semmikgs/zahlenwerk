@@ -215,6 +215,7 @@ body::after{
   background:var(--karte);border:1.5px solid var(--kante);border-radius:14px;
 }
 .streifen-wert strong{display:block;font:700 23px/1.1 var(--rund);color:var(--licht)}
+.streifen-wert.lauf strong{color:#FF9A4D}
 .streifen-wert span{display:block;font-size:11.5px;color:var(--nebel);margin-top:4px}
 
 /* ---------------- Tageskarte: der Held der Startseite ---------------- */
@@ -300,10 +301,20 @@ body::after{
 .rangliste li:nth-child(1) .rang-platz{color:var(--stern)}
 .rang-name{flex:1;min-width:0;font-weight:600;font-size:16px;
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.rang-sterne{
-  flex:0 0 auto;font:700 15px var(--rund);color:var(--stern);
-  display:flex;align-items:center;gap:4px;
+.rang-komet{display:inline-block;vertical-align:-.15em;margin-left:3px}
+.rang-komet svg{width:17px;height:12px}
+
+/* Zwei Zahlen je Zeile: links der Lauf, rechts die Tage gesamt. Feste
+   Breiten, damit die Spalten über alle Zeilen hinweg untereinander stehen
+   und sich auf einen Blick vergleichen lassen. */
+.rang-lauf,.rang-sterne{
+  flex:0 0 auto;display:flex;align-items:center;justify-content:flex-end;
+  gap:4px;font:700 15px var(--rund);
 }
+.rang-lauf{flex:0 0 50px;color:#FF9A4D}
+.rang-lauf.kalt{color:var(--nebel)}
+.rang-sterne{flex:0 0 50px;color:var(--stern)}
+.rang-lauf svg,.rang-sterne svg{flex:0 0 auto}
 .rangliste-leer{
   color:var(--nebel);font-size:14.5px;padding:14px;
   background:var(--karte);border-radius:13px;

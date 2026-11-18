@@ -1,10 +1,11 @@
-import { CONFIG } from './config.js?v=14';
-import { DB, speicher, kalenderwoche } from './db.js?v=14';
+import { CONFIG } from './config.js?v=15';
+import { DB, speicher, kalenderwoche } from './db.js?v=15';
 import {
   ladeKapitelliste, ladeKapitel, baueAufgabe, waehleVorlagen,
   naechsteWiederholung, auswertungNachTag, wuerfel, startwert, heute,
-} from './engine.js?v=14';
-import { feiern, danebenRums, lobText, sternenregen, funken } from './effekte.js?v=14';
+  laufAusSternen,
+} from './engine.js?v=15';
+import { feiern, danebenRums, lobText, sternenregen, funken } from './effekte.js?v=15';
 
 const $ = (id) => document.getElementById(id);
 
@@ -161,8 +162,9 @@ async function startseite() {
 
   const richtig = versuche.filter((v) => v.richtig).length;
   const dieseWoche = sterneDieserWoche();
+  const meinLauf = laufAusSternen(sterne.map((e) => e.tag));
 
-  $('stat-woche').textContent = `${dieseWoche}/${CONFIG.sterneProWoche}`;
+  $('stat-lauf').textContent = meinLauf;
   $('stat-gesamt').textContent = sterne.length;
   $('stat-quote').textContent = versuche.length
     ? `${Math.round((richtig / versuche.length) * 100)}%` : '–';
@@ -174,7 +176,7 @@ async function startseite() {
   zeichneKapitel();
   zeichneDiagnose($('diagnose'), versuche, 4);
 
-  $('version').textContent = 'Version 14' + (DB.nurLokal() ? ' · Stand nur auf diesem Gerät' : '');
+  $('version').textContent = 'Version 15' + (DB.nurLokal() ? ' · Stand nur auf diesem Gerät' : '');
   zeige('start');
 
   // Wer noch keinen Spitznamen hat, wird einmal gefragt – nicht aufdringlich,
@@ -320,6 +322,30 @@ function sternZeichen({ wochenstern, wochenaufgabe_geloest: schweif, einladend }
   </svg>`;
 }
 
+/* Schlichter Stern für die Gesamtzahl geübter Tage. Bewusst getrennt vom
+   Wochenstern-Zeichen: Dort heißt gefüllt "Wochenstern geschafft", hier
+   zählt er nur Tage. Die Beschriftung steht am umgebenden Element. */
+const STERN_KLEIN = 'M12 2.2L14.59 9.04L21.89 9.39L16.18 13.96L18.11 21.01L12 17'
+  + 'L5.89 21.01L7.82 13.96L2.11 9.39L9.41 9.04Z';
+
+function sternSymbol() {
+  return `<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">
+    <path d="${STERN_KLEIN}" fill="#FFC247"/></svg>`;
+}
+
+/* Die Flamme steht für den Lauf. Gezeichnet statt als Zeichen aus der
+   Schriftart, weil Handys sie sonst als buntes Emoji darstellen – und weil
+   sie so dieselbe Farbe wie die Zahl daneben trägt. */
+function flammeZeichen(brennt) {
+  const farbe = brennt ? '#FF9A4D' : '#4C5894';
+  return `<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">
+    <path d="M12 1.8c3.3 4.3 6.3 6.5 6.3 11.2 0 3.7-2.8 6.5-6.3 6.5s-6.3-2.8-6.3-6.5c0-3 1.6-4.7 3.2-6.7.6 1.4 1.3 2 2 2.3.4-2.6.6-4.7 1.1-6.8z"
+      fill="${farbe}" opacity="${brennt ? 1 : .55}"/>
+    <path d="M12 19.5c-1.9 0-3.4-1.5-3.4-3.5 0-1.7 1.1-2.6 2-3.9.5 1.2 1.2 1.7 2 2 .9-1 1.3-1.9 1.5-3 1 1.5 1.3 2.8 1.3 4.9 0 2-1.5 3.5-3.4 3.5z"
+      fill="#141B3C" opacity="${brennt ? .34 : 0}"/>
+  </svg>`;
+}
+
 /* Derselbe Stern in groß, für den Abschlussbildschirm. */
 function grosserStern(mitSchweif) {
   const pfad = 'M50.0 12.0L57.41 31.81L78.53 32.73L61.98 45.89L67.63 66.27L50.0 54.6L32.37 66.27L38.02 45.89L21.47 32.73L42.59 31.81Z';
@@ -345,8 +371,10 @@ function zeichneRangliste(ziel, anzahl) {
     return;
   }
 
+  // Sortiert wird nach dem Lauf: Wer dranbleibt, steht oben. Bei Gleichstand
+  // entscheidet, wer insgesamt mehr Tage gesammelt hat.
   const sortiert = [...liste].sort((a, b) =>
-    b.sterne_woche - a.sterne_woche || b.sterne_gesamt - a.sterne_gesamt);
+    (b.lauf ?? 0) - (a.lauf ?? 0) || b.sterne_gesamt - a.sterne_gesamt);
 
   // Immer die Spitze zeigen – und die eigene Zeile, auch wenn sie weiter unten steht.
   const oben = sortiert.slice(0, anzahl);
@@ -355,10 +383,15 @@ function zeichneRangliste(ziel, anzahl) {
 
   ziel.innerHTML = oben.map((e) => {
     const platz = sortiert.indexOf(e) + 1;
+    const lauf = e.lauf ?? 0;
     return `<li class="${e.ich ? 'ich' : ''}">
       <span class="rang-platz">${platz}</span>
-      <span class="rang-name">${entschaerfen(e.name)}</span>
-      <span class="rang-sterne">${sternZeichen(e)} ${e.sterne_woche}</span>
+      <span class="rang-name">${entschaerfen(e.name)}${
+        e.wochenaufgabe_geloest ? ` <span class="rang-komet">${sternZeichen(e)}</span>` : ''}</span>
+      <span class="rang-lauf ${lauf ? '' : 'kalt'}" title="${lauf} Tage am Stück">
+        ${flammeZeichen(lauf > 0)}${lauf}</span>
+      <span class="rang-sterne" title="${e.sterne_gesamt} Tage geübt">
+        ${sternSymbol()}${e.sterne_gesamt}</span>
     </li>`;
   }).join('');
 

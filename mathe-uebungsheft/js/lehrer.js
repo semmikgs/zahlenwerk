@@ -1,6 +1,8 @@
-import { DB, kalenderwoche } from './db.js?v=14';
-import { ladeKapitelliste, ladeKapitel, auswertungNachTag, haeufigsteFehler } from './engine.js?v=14';
-import { qrSvg } from './qr.js?v=14';
+import { DB, kalenderwoche } from './db.js?v=15';
+import {
+  ladeKapitelliste, ladeKapitel, auswertungNachTag, haeufigsteFehler, laufAusSternen,
+} from './engine.js?v=15';
+import { qrSvg } from './qr.js?v=15';
 
 const $ = (id) => document.getElementById(id);
 const zeige = (name) =>
@@ -244,6 +246,7 @@ function schuelerBilanz(id) {
     schnitt: eigene.length ? Math.round(ms / eigene.length) : 0,
     gesamtzeit: ms,
     sterne: sterne.filter((s) => s.nutzer === id).length,
+    lauf: laufAusSternen(sterne.filter((s) => s.nutzer === id).map((s) => s.tag)),
     zuletzt: eigene[0]?.erstellt || null,
     schwach: tags[0] || null,
     stark: tags[tags.length - 1] || null,
@@ -264,12 +267,13 @@ function schuelerZeichnen() {
           <td class="rechts">${b.anzahl}</td>
           <td>${b.anzahl ? `${balken(b.quote, b.anzahl)} <small class="quote ${klasseQ}">${prozent(b.quote)}</small>` : '–'}</td>
           <td class="rechts">${zeit(b.schnitt)}</td>
+          <td class="rechts">${b.lauf || '–'}</td>
           <td class="rechts">${b.sterne}</td>
           <td class="rechts">${datum(b.zuletzt)}</td>
           <td>${b.schwach ? b.schwach.name : '–'}</td>
         </tr>`;
       }).join('')
-    : '<tr><td colspan="9" class="leer">Für diese Klasse gibt es noch keine Zugänge.</td></tr>';
+    : '<tr><td colspan="10" class="leer">Für diese Klasse gibt es noch keine Zugänge.</td></tr>';
 
   $('haken-kopf').checked = false;
   auswahlGezaehlt();
@@ -363,7 +367,8 @@ function detailOeffnen(id) {
     [b.anzahl, 'Aufgaben'],
     [b.anzahl ? prozent(b.quote) : '–', 'richtig'],
     [zeit(b.gesamtzeit), 'Übungszeit'],
-    [b.sterne, 'Sterne'],
+    [b.lauf, 'Tage am Stück'],
+    [b.sterne, 'Tage gesamt'],
   ].map(([w, t]) => `<div class="kennzahl"><strong>${w}</strong><span>${t}</span></div>`).join('');
 
   const tags = auswertungNachTag(b.versuche, zustand.tagNamen);
@@ -711,13 +716,13 @@ $('knopf-kapitel-speichern').addEventListener('click', async () => {
 
 $('knopf-csv').addEventListener('click', () => {
   if (!zustand.daten) return;
-  const zeilen = [['Code', 'Spitzname', 'Aufgaben', 'Richtig', 'Quote', 'UebungszeitMin', 'Sterne', 'Zuletzt', 'SchwaechsterBereich', 'StaerksterBereich']];
+  const zeilen = [['Code', 'Spitzname', 'Aufgaben', 'Richtig', 'Quote', 'UebungszeitMin', 'Lauf', 'Sterne', 'Zuletzt', 'SchwaechsterBereich', 'StaerksterBereich']];
   for (const p of zustand.daten.profile) {
     const b = schuelerBilanz(p.id);
     zeilen.push([
       p.code || '', p.spitzname || '', b.anzahl, b.richtig,
       b.anzahl ? Math.round(b.quote * 100) : '',
-      Math.round(b.gesamtzeit / 60000), b.sterne,
+      Math.round(b.gesamtzeit / 60000), b.lauf, b.sterne,
       b.zuletzt ? b.zuletzt.slice(0, 10) : '',
       b.schwach?.name || '', b.stark?.name || '',
     ]);

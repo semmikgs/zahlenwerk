@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#090E24">
 <meta name="color-scheme" content="dark">
 <title>Zahlenwerk</title>
-<link rel="stylesheet" href="css/stil.css?v=14">
+<link rel="stylesheet" href="css/stil.css?v=15">
 </head>
 <body>
 
@@ -56,8 +56,8 @@
     </div>
 
     <div class="streifen">
-      <div class="streifen-wert"><strong id="stat-woche">0/5</strong><span>diese Woche</span></div>
-      <div class="streifen-wert"><strong id="stat-gesamt">0</strong><span>Sterne gesamt</span></div>
+      <div class="streifen-wert lauf"><strong id="stat-lauf">0</strong><span>Tage am Stück</span></div>
+      <div class="streifen-wert"><strong id="stat-gesamt">0</strong><span>Tage gesamt</span></div>
       <div class="streifen-wert"><strong id="stat-quote">–</strong><span>richtig</span></div>
     </div>
 
@@ -80,8 +80,8 @@
     </button>
 
     <!-- Rangliste -->
-    <h2 class="ueberschrift">Rangliste der Woche</h2>
-    <p class="abschnitt-info">Gezählt werden Sterne, nicht Fehler. Wer übt, kommt nach oben.</p>
+    <h2 class="ueberschrift">Rangliste</h2>
+    <p class="abschnitt-info">Links die Tage am Stück, rechts alle geübten Tage. Gezählt wird Dranbleiben, nicht Fehlerfreiheit.</p>
     <ul class="rangliste" id="rangliste"></ul>
     <button class="knopf knopf-zweit" id="knopf-name" hidden>Spitznamen ändern</button>
 
@@ -189,6 +189,6 @@
   </div>
 </dialog>
 
-<script type="module" src="js/app.js?v=14"></script>
+<script type="module" src="js/app.js?v=15"></script>
 </body>
 </html>

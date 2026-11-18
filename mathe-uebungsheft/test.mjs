@@ -1,4 +1,4 @@
-import { wuerfel, startwert, baueAufgabe } from './js/engine.js?v=14';
+import { wuerfel, startwert, baueAufgabe } from './js/engine.js?v=15';
 import rz from './kapitel/rationale-zahlen.js';
 import pz from './kapitel/prozent.js';
 import te from './kapitel/terme.js';
